@@ -107,6 +107,10 @@ class ConfigHelper
     public const EXTRA_SETTINGS_ADDITIONAL_SECTIONS =
         'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
 
+    
+    public const IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED = 'algoliasearch_recommend/recommend/is_frequently_bought_together_enabled';
+    public const IS_RECOMMEND_RELATED_PRODUCTS_ENABLED = 'algoliasearch_recommend/recommend/is_related_products_enabled';    
+
     public const DEFAULT_MAX_RECORD_SIZE = 10000;
 
     private $configInterface;
@@ -423,6 +427,16 @@ class ConfigHelper
     public function isInstantEnabled($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::IS_INSTANT_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function isRecommendFrequentlyBroughtTogetherEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function isRecommendRelatedProductsEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::IS_RECOMMEND_RELATED_PRODUCTS_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function useAdaptiveImage($storeId = null)
