@@ -29,7 +29,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         }
 
         if ($this->areCustomersGroupsEnabled) {
-            $this->setFinalGroupPrices($field, $currencyCode, $min, $max, $dashedFormat);
+            $this->setFinalGroupPrices($field, $currencyCode, $min, $max, $dashedFormat, $product, $subProducts, $withTax);
         }
     }
 
@@ -123,20 +123,58 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         $this->customData[$field][$currencyCode]['default_formated'] = $this->formatPrice($min, $currencyCode);
     }
 
-    protected function setFinalGroupPrices($field, $currencyCode, $min, $max, $dashedFormat)
+    protected function setFinalGroupPrices($field, $currencyCode, $min, $max, $dashedFormat, $product, $subproducts, $withTax)
     {
-        /** @var Group $group */
-        foreach ($this->groups as $group) {
-            $groupId = (int) $group->getData('customer_group_id');
+        if (count($subproducts) > 0) {
 
-            if ($this->customData[$field][$currencyCode]['group_' . $groupId] == 0) {
-                $this->customData[$field][$currencyCode]['group_' . $groupId] = $min;
+            $array = [];
+            /** @var Group $group */
+            foreach ($this->groups as $group) {
+                $groupId = (int) $group->getData('customer_group_id');
+                foreach ($subproducts as $subProduct) {
+                    $subProduct->setData('customer_group_id', $groupId);
+                    $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
+                    $price     = $this->getTaxPrice($product, $subProduct->getPriceModel()->getFinalPrice(1, $subProduct), $withTax);
+                    $array[$groupId][] = $price;
+                    $subProduct->setData('customer_group_id', null);
+                }
+            }
 
-                if ($min === $max) {
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
-                        $this->customData[$field][$currencyCode]['default_formated'];
-                } else {
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
+            $minArray = [];
+            foreach ($array as $key => $value)
+            {
+                $minArray[$key]['price'] = min($value);
+                $price = min($value);
+                $formattedPrice = $this->formatPrice($price, $currencyCode);
+                $minArray[$key]['formatted'] = $formattedPrice;
+                if ($currencyCode !== $this->baseCurrencyCode) {
+                    $min = $this->convertPrice($price, $currencyCode);
+                    $formattedPrice = $this->formatPrice($min, $currencyCode);
+                    $minArray[$key]['formatted'] = strval($formattedPrice);
+                }
+            }
+
+            /** @var Group $group */
+            foreach ($this->groups as $group) {
+                $groupId = (int) $group->getData('customer_group_id');
+                $this->customData[$field][$currencyCode]['group_' .$groupId] = $minArray[$groupId]['price'];
+                $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $minArray[$groupId]['formatted'];
+            }
+
+        } else {
+            /** @var Group $group */
+            foreach ($this->groups as $group) {
+                $groupId = (int) $group->getData('customer_group_id');
+
+                if ($this->customData[$field][$currencyCode]['group_' . $groupId] == 0) {
+                    $this->customData[$field][$currencyCode]['group_' . $groupId] = $min;
+
+                    if ($min === $max) {
+                        $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
+                            $this->customData[$field][$currencyCode]['default_formated'];
+                    } else {
+                        $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
+                    }
                 }
             }
         }
