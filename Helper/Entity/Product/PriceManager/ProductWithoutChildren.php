@@ -12,6 +12,7 @@ use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Helper\Data as TaxHelper;
 use Magento\Tax\Model\Config as TaxConfig;
+use Magento\Catalog\Model\ProductRepository;
 
 abstract class ProductWithoutChildren
 {
@@ -28,7 +29,13 @@ abstract class ProductWithoutChildren
     protected $areCustomersGroupsEnabled;
     protected $customData = [];
 
+    /**
+     * @var ProductRepository
+     */
+    protected $productRepository;
+
     public function __construct(
+        ProductRepository $productRepository,
         ConfigHelper $configHelper,
         CollectionFactory $customerGroupCollectionFactory,
         PriceCurrencyInterface $priceCurrency,
@@ -36,6 +43,7 @@ abstract class ProductWithoutChildren
         TaxHelper $taxHelper,
         Rule $rule
     ) {
+        $this->productRepository = $productRepository;
         $this->configHelper = $configHelper;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
         $this->priceCurrency = $priceCurrency;
@@ -187,6 +195,7 @@ abstract class ProductWithoutChildren
         $tierPrices = [];
 
         if (!is_null($product->getTierPrices())) {
+            $product = $this->productRepository->get($product->getSku());
             $productTierPrices = $product->getTierPrices();
             foreach ($productTierPrices as $productTierPrice) {
                 if (!isset($tierPrices[$productTierPrice->getCustomerGroupId()])) {
@@ -245,7 +254,7 @@ abstract class ProductWithoutChildren
 
     protected function addCustomerGroupsPrices(Product $product, $currencyCode, $withTax, $field)
     {
-        /** @var \Magento\Customer\Model\Group $group */
+        /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
 
@@ -287,7 +296,7 @@ abstract class ProductWithoutChildren
     protected function addSpecialPrices($specialPrice, $field, $currencyCode)
     {
         if ($this->areCustomersGroupsEnabled) {
-            /** @var \Magento\Customer\Model\Group $group */
+            /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
 
@@ -322,7 +331,7 @@ abstract class ProductWithoutChildren
     protected function addTierPrices($tierPrice, $field, $currencyCode)
     {
         if ($this->areCustomersGroupsEnabled) {
-            /** @var \Magento\Customer\Model\Group $group */
+            /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
 
