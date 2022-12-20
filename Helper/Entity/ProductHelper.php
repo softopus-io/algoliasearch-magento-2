@@ -983,8 +983,10 @@ class ProductHelper
 
         /** @var Product $subProduct */
         foreach ($subProducts as $subProduct) {
-            /** @var string|array $valueText */
-            if ($valueText = $subProduct->getAttributeText($attributeName)) {
+            $value = $subProduct->getData($attributeName);
+            if ($value || $attributeResource->getFrontendInput() == 'boolean') {
+                /** @var string|array $valueText */
+                $valueText = $subProduct->getAttributeText($attributeName);
                 $values = array_merge($values, $this->getValues($valueText, $subProduct, $attributeResource));
                 if ($this->configHelper->useAdaptiveImage($attributeResource->getStoreId())) {
                     $subProductImages = $this->addSubProductImage(
