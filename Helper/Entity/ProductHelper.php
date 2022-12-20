@@ -940,6 +940,10 @@ class ProductHelper
 
             $value = $product->getData($attributeName);
 
+            //Fix for product attribute type 'Yes/No'
+            if ($attributeResource->getFrontendInput() == 'boolean') {
+                $this->attributesToIndexAsArray[] = $attributeName;
+            }
             if ($value !== null) {
                 $customData = $this->addNonNullValue($customData, $value, $product, $attribute, $attributeResource);
 
@@ -979,11 +983,8 @@ class ProductHelper
 
         /** @var Product $subProduct */
         foreach ($subProducts as $subProduct) {
-            $value = $subProduct->getData($attributeName);
-            if ($value) {
-                /** @var string|array $valueText */
-                $valueText = $subProduct->getAttributeText($attributeName);
-
+            /** @var string|array $valueText */
+            if ($valueText = $subProduct->getAttributeText($attributeName)) {
                 $values = array_merge($values, $this->getValues($valueText, $subProduct, $attributeResource));
                 if ($this->configHelper->useAdaptiveImage($attributeResource->getStoreId())) {
                     $subProductImages = $this->addSubProductImage(
