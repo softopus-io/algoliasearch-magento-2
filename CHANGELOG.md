@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.7.0-p1
+
+### FIXES
+- Fixed the Magento 2.4.5 compatibility
+
 ## 3.7.0
 
 ### UPDATES
