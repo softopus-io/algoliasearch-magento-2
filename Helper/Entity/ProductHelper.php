@@ -1170,7 +1170,7 @@ class ProductHelper
                             $groupId = (int)$group->getData('customer_group_id');
                             $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
                             if (in_array($websiteId, $excludedWebsites)) {
-                                $group->delete();
+                                continue;
                             }
                             $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $group_id;
                         }
