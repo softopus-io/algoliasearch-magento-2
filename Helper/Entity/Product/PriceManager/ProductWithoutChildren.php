@@ -10,6 +10,7 @@ use Magento\Catalog\Model\ProductFactory;
 use Magento\CatalogRule\Model\ResourceModel\Rule;
 use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
+use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Helper\Data as TaxHelper;
 use Magento\Tax\Model\Config as TaxConfig;
@@ -45,6 +46,11 @@ abstract class ProductWithoutChildren
      */
     protected $productloader;
 
+    /**
+     * @var GroupExcludedWebsiteRepositoryInterface
+     */
+    protected $groupExcludedWebsiteRepository;
+
     protected $store;
     protected $baseCurrencyCode;
     protected $groups;
@@ -54,6 +60,7 @@ abstract class ProductWithoutChildren
     /**
      * @param ConfigHelper $configHelper
      * @param CollectionFactory $customerGroupCollectionFactory
+     * @param GroupExcludedWebsiteRepositoryInterface groupExcludedWebsiteRepository
      * @param PriceCurrencyInterface $priceCurrency
      * @param CatalogHelper $catalogHelper
      * @param TaxHelper $taxHelper
@@ -63,6 +70,7 @@ abstract class ProductWithoutChildren
     public function __construct(
         ConfigHelper $configHelper,
         CollectionFactory $customerGroupCollectionFactory,
+        GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
         PriceCurrencyInterface $priceCurrency,
         CatalogHelper $catalogHelper,
         TaxHelper $taxHelper,
@@ -71,6 +79,7 @@ abstract class ProductWithoutChildren
     ) {
         $this->configHelper = $configHelper;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
+        $this->groupExcludedWebsiteRepository = $groupExcludedWebsiteRepository;
         $this->priceCurrency = $priceCurrency;
         $this->catalogHelper = $catalogHelper;
         $this->taxHelper = $taxHelper;
@@ -95,6 +104,14 @@ abstract class ProductWithoutChildren
         $fields = $this->getFields();
         if (!$this->areCustomersGroupsEnabled) {
             $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
+        } else {
+            foreach ($this->groups as $group) {
+                $groupId = (int)$group->getData('customer_group_id');
+                $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
+                if (in_array($product->getStore()->getWebsiteId(), $excludedWebsites)) {
+                    $group->delete();
+                }
+            }
         }
         // price/price_with_tax => true/false
         foreach ($fields as $field => $withTax) {
