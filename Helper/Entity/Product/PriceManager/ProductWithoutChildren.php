@@ -105,12 +105,16 @@ abstract class ProductWithoutChildren
         if (!$this->areCustomersGroupsEnabled) {
             $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
         } else {
+            $excludedGroups = array();
             foreach ($this->groups as $group) {
                 $groupId = (int)$group->getData('customer_group_id');
                 $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
                 if (in_array($product->getStore()->getWebsiteId(), $excludedWebsites)) {
-                    $group->delete();
+                    $excludedGroups[] = $groupId;
                 }
+            }
+            if(count($excludedGroups) > 0) {
+                $this->groups->addFieldToFilter('main_table.customer_group_id', ["nin" => $excludedGroups]);
             }
         }
         // price/price_with_tax => true/false
