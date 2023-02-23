@@ -70,6 +70,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $level = '';
         $categoryId = '';
         $parentCategoryName = '';
+        $currentCategory = '';
+        $childrenCategories = array();
 
         $addToCartParams = $this->getAddToCartParams();
 
@@ -88,9 +90,13 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
             if ($category && $category->getDisplayMode() !== 'PAGE') {
                 $category->getUrlInstance()->setStore($this->getStoreId());
-
+                $childCategories = $category->getChildrenCategories();
+                foreach ($childCategories as $childCategory){
+                    $childrenCategories[$childCategory->getName()]['url'] = $childCategory->getUrl();
+                    $childrenCategories[$childCategory->getName()]['level'] = $childCategory->getLevel();
+                }
                 $categoryId = $category->getId();
-
+                $currentCategory = $category->getName();
                 $level = -1;
                 foreach ($category->getPathIds() as $treeCategoryId) {
                     if ($path !== '') {
@@ -233,6 +239,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'path' => $path,
                 'level' => $level,
                 'parentCategory' => $parentCategoryName,
+                'currentCategory' => $currentCategory,
+                'childrenCategories' => $childrenCategories,
             ],
             'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
             'showSuggestionsOnNoResultsPage' => $config->showSuggestionsOnNoResultsPage(),

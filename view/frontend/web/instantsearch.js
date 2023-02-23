@@ -420,6 +420,8 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 		 * Custom widgets can be added to this object like [attribute]: function(facet, templates)
 		 * Function must return an array [<widget name>: string, <widget options>: object]
 		 **/
+		const categoryUrls = algoliaConfig.request.childrenCategories;
+        const activeCategory = algoliaConfig.request.currentCategory;
 		var customAttributeFacet = {
 			categories: function (facet, templates) {
 				var hierarchical_levels = [];
@@ -427,41 +429,65 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 					hierarchical_levels.push('categories.level' + l.toString());
 				}
 
-				var hierarchicalMenuParams = {
-					container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
-					attributes: hierarchical_levels,
-					separator: ' /// ',
-					templates: templates,
-					alwaysGetRootLevel: false,
-					showParentLevel:false,
-					limit: algoliaConfig.maxValuesPerFacet,
-					sortBy: ['name:asc'],
+                var hierarchicalMenuParams = {
+                    container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+                    attributes: hierarchical_levels,
+                    separator: ' /// ',
+                    templates: templates,
+                    alwaysGetRootLevel: false,
+                    showParentLevel:false,
+                    limit: algoliaConfig.maxValuesPerFacet,
+                    sortBy: ['name:asc'],
                     transformItems(items) {
-                    	if(algoliaConfig.isCategoryPage) {
-                            var filteredData = [];
-                            items.forEach(element => {
-                                if (element.label == algoliaConfig.request.parentCategory) {
-                                    filteredData.push(element);
-                                };
-                            });
-                            items = filteredData;
+                        if(algoliaConfig.isCategoryPage) {
+                            const addCategoryUrl = (item) => {
+                                item.url = categoryUrls[item.label]['url'];
+                                item.categoryUrl = categoryUrls[item.label]['url'];
+                                item.data = null;
+                                return item;
+                            }
+                            const filterCategories = (data, value, key = 'title', sub = 'children', tempObj = {}) => {
+                                    if (value && data) {
+                                        data.find((node) => {
+                                                if (node[key] === value) {
+                                                    tempObj.found = node;
+                                                    return node;
+                                                }
+                                                return filterCategories(node[sub], value, key, sub, tempObj);
+                                            }
+                                        );
+                                        if (tempObj.found) {
+                                            return tempObj.found;
+                                        }
+                                    }
+                                    return false;
+                                }
+                            ;
+                            if (algoliaConfig.request.childrenCategories) {
+                                items = filterCategories(items, activeCategory, 'label', 'data').data ?? [];
+                            } else {
+                                items = [];
+                            }
+                            return items.map(item=>addCategoryUrl(item));
+                        }else{
+                            return items.map(item => ({
+                                ...item,
+                                label: item.label,
+                            }));
                         }
-                        return items.map(item => ({
-                            ...item,
-                            label: item.label,
-                        }));
                     },
-				};
+                };
 
-				hierarchicalMenuParams.templates.item = '' +
-					'<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{url}}">{{label}}' + ' ' +
-					'<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
-					'</a>';
-				hierarchicalMenuParams.panelOptions = {
-					templates: {
-						header: '<div class="name">' + (facet.label ? facet.label : facet.attribute) + '</div>',
-					}
-				};
+                // hierarchicalMenuParams.templates.item = '' +
+                // 	'<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{url}}">{{label}}' + ' ' +
+                // 	'<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
+                // 	'</a>';
+                hierarchicalMenuParams.templates.item = '' + '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}"' + 'href="{{categoryUrl}}">{{label}}' + ' ' + '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' + ' ' + '</a>';
+                hierarchicalMenuParams.panelOptions = {
+                    templates: {
+                        header: '<div class="name">' + (facet.label ? facet.label : facet.attribute) + '</div>',
+                    }
+                };
 
 				return ['hierarchicalMenu', hierarchicalMenuParams];
 			}
