@@ -61,6 +61,9 @@
                 </trends_item>
             </recommend>
         </algoliasearch_recommend>
+        <algoliasearch_queue>
+            <cron_schedule>0 0 30 2 *</cron_schedule>
+        </algoliasearch_queue>
         <algoliasearch_advanced>
             <advanced>
                 <max_record_size_limit>10000</max_record_size_limit>

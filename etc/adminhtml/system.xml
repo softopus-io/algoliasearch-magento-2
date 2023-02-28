@@ -326,7 +326,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Virtual Replica is only available on Premium plans <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a> 
+                            Virtual Replica is only available on Premium plans <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a>
                         ]]>
                     </comment>
                     <depends>
@@ -751,12 +751,21 @@
                     <comment>
                         <![CDATA[
                             If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br>
-                            <br>
-                            To schedule the run you need to add this in your crontab:<br>
-                            <code>*/5 * * * * php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code>
-                            <br><span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
+                            <span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
                         ]]>
                     </comment>
+                </field>
+                <field id="cron_schedule" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cron Schedule</label>
+                    <comment>
+                        <![CDATA[
+                            The cron schedule for running the indexing queue. We suggest `*/5 * * * *` to run the algolia_queue_runner cron every 5 minutes.
+                            <br> If you have previously configured cron via crontab and would like to use this to schedule, please remember to remove the entry in crontab for the algolia_queue_runner
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
                 </field>
                 <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
@@ -844,7 +853,6 @@
                 </field>
             </group>
         </section>
-
         <section id="algoliasearch_personalization" translate="label" type="text" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Personalization</label>
             <tab>algolia</tab>
@@ -953,7 +961,6 @@
                 </group>
             </group>
         </section>
-
         <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Google Analytics</label>
             <tab>algolia</tab>
@@ -1012,7 +1019,6 @@
                 </field>
             </group>
         </section>
-
         <section id="algoliasearch_advanced" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Advanced</label>
             <tab>algolia</tab>
