@@ -662,10 +662,22 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 
 			search = algolia.triggerHooks('beforeInstantsearchStart', search, algoliaBundle);
 			search.start();
+			setTimeout(categoryPageRedirect, 1000);
 			search = algolia.triggerHooks('afterInstantsearchStart', search, algoliaBundle);
 
 			isStarted = true;
 		}
+
+		function categoryPageRedirect() {
+            if (algoliaConfig.isCategoryPage) {
+                const btns = document.querySelectorAll('.ais-HierarchicalMenu-link');
+                for (let i = 0; i < btns.length; i++) {
+                    btns[i].addEventListener('click', function (e) {
+                        window.location.href = e.target.href;
+                    });
+                }
+            }
+        }
 
 		/** Initialise searching **/
 		startInstantSearch();
