@@ -34,6 +34,11 @@
                 <custom_ranking_category_attributes><![CDATA[{"_1600352142072_72":{"attribute":"product_count","order":"desc"}}]]></custom_ranking_category_attributes>
             </categories>
         </algoliasearch_categories>
+        <algoliasearch_queue>
+            <queue>
+                <enhanced_archive>0</enhanced_archive>
+            </queue>
+        </algoliasearch_queue>
         <algoliasearch_personalization>
             <personalization_group>
                 <personalization_click_events_group>

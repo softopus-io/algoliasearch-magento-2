@@ -58,6 +58,7 @@ class ConfigHelper
     public const IS_ACTIVE = 'algoliasearch_queue/queue/active';
     public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
     public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
+    public const ENHANCED_QUEUE_ARCHIVE = 'algoliasearch_queue/queue/enhanced_archive';
 
     public const XML_PATH_IMAGE_WIDTH = 'algoliasearch_images/image/width';
     public const XML_PATH_IMAGE_HEIGHT = 'algoliasearch_images/image/height';
@@ -612,6 +613,15 @@ class ConfigHelper
     public function isQueueActive($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::IS_ACTIVE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isEnhancedQueueArchiveEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::ENHANCED_QUEUE_ARCHIVE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

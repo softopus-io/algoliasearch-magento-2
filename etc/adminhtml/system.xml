@@ -326,7 +326,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Virtual Replica is only available on Premium plans <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a> 
+                            Virtual Replica is only available on Premium plans <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a>
                         ]]>
                     </comment>
                     <depends>
@@ -776,6 +776,18 @@
                     <validate>validate-digits</validate>
                     <label>Number of times to retry processing of queued jobs</label>
                     <source_model>Algolia\AlgoliaSearch\Model\Source\RetryValues</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="enhanced_archive" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable enhanced archive</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Useful for debugging. Algolia archives failed jobs by default. Enable this setting to archive all jobs that are processed by the indexing queue and to obtain and preserve the stack trace for jobs created.
+                        ]]>
+                    </comment>
                     <depends>
                         <field id="active">1</field>
                     </depends>
