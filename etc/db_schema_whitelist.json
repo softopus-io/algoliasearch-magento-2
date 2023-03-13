@@ -12,7 +12,8 @@
             "data_size": true,
             "created": true,
             "is_full_reindex": true,
-            "locked_at": true
+            "locked_at": true,
+            "debug": true
         },
         "constraint": {
             "PRIMARY": true
