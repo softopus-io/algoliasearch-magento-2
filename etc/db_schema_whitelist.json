@@ -44,7 +44,8 @@
             "retries": true,
             "is_full_reindex": true,
             "success": true,
-            "debug": true
+            "debug": true,
+            "processed_at": true
         },
         "constraint": {
             "PRIMARY": true
