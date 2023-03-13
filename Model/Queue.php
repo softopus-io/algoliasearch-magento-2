@@ -127,6 +127,7 @@ class Queue
                 'pid'       => null,
                 'max_retries' => $this->configHelper->getRetryLimit(),
                 'is_full_reindex' => $isFullReindex ? 1 : 0,
+                'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled() ? (new \Exception)->getTraceAsString() : null
             ]);
         } else {
             $object = $this->objectManager->get($className);
@@ -276,17 +277,22 @@ class Queue
     protected function archiveFailedJobs($whereClause)
     {
         $select = $this->db->select()
-            ->from($this->table, ['pid', 'class', 'method', 'data', 'error_log', 'data_size', 'NOW()'])
+            ->from($this->table, ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'debug'])
             ->where($whereClause);
 
         $query = $this->db->insertFromSelect(
             $select,
             $this->archiveTable,
-            ['pid', 'class', 'method', 'data', 'error_log', 'data_size', 'created_at']
+            ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'debug']
         );
 
         $this->db->query($query);
     }
+
+    // stubs
+    protected function archiveJobs($whereClause): void {}
+
+    protected function archiveSuccessfulJob($whereClause): void {}
 
     /**
      * @param int $maxJobs
@@ -576,6 +582,8 @@ class Queue
     protected function clearOldFailingJobs()
     {
         $this->archiveFailedJobs('retries > max_retries');
+        // DEBUG:
+        // $this->archiveFailedJobs('1 = 1');
         $this->db->delete($this->table, 'retries > max_retries');
     }
 
