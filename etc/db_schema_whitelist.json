@@ -40,7 +40,11 @@
             "data": true,
             "error_log": true,
             "data_size": true,
-            "created_at": true
+            "created_at": true,
+            "retries": true,
+            "is_full_reindex": true,
+            "success": true,
+            "debug": true
         },
         "constraint": {
             "PRIMARY": true
