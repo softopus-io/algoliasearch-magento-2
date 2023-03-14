@@ -205,6 +205,18 @@ class Queue
     }
 
     /**
+     * Returns a more portable where clause as a string (useful across multiple db calls that do not always accept an array)
+     * e.g. alternative to something like...
+     * ['job_id IN (?)' => $job->getMergedIds()]
+     *
+     * @param Job $job
+     * @return string
+     */
+    protected function jobToWhereClause(Job $job): string {
+        return sprintf('job_id IN (%s)',implode(',', $job->getMergedIds()));
+    }
+
+    /**
      * @param Job $job
      * @return void
      * @throws \Exception
@@ -212,16 +224,54 @@ class Queue
     protected function processJob(Job $job) {
         $job->execute();
 
-        $successWhere = sprintf('job_id IN (%s)',implode(',', $job->getMergedIds()));
+        $where = $this->jobToWhereClause($job);
 
         if ($this->configHelper->isEnhancedQueueArchiveEnabled()) {
-            $this->archiveSuccessfulJob($successWhere);
+            $this->archiveSuccessfulJobs($where);
         }
 
         // Delete one by one
-        $this->db->delete($this->table, $successWhere);
+        $this->db->delete($this->table, $where);
 
         $this->logRecord['processed_jobs'] += count($job->getMergedIds());
+    }
+
+    /**
+     * @param Job $job
+     * @param Exception $e
+     * @return void
+     */
+    protected function handleFailedJob(Job $job, Exception $e): void {
+        $this->noOfFailedJobs++;
+
+        // Log error information
+        $logMessage = 'Queue processing ' . $job->getPid() . ' [KO]:
+                    Class: ' . $job->getClass() . ',
+                    Method: ' . $job->getMethod() . ',
+                    Parameters: ' . json_encode($job->getDecodedData());
+        $this->logger->log($logMessage);
+
+        $logMessage = date('c') . ' ERROR: ' . get_class($e) . ':
+                    ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() .
+            "\nStack trace:\n" . $e->getTraceAsString();
+        $this->logger->log($logMessage);
+
+        $where = $this->jobToWhereClause($job);
+
+        $this->db->update($this->table, [
+            'pid' => null,
+            'retries' => new Zend_Db_Expr('retries + 1'),
+            'error_log' => $logMessage,
+        ], $where);
+
+        if ($this->configHelper->isEnhancedQueueArchiveEnabled()) {
+            // Record *every* instance of a failed job in context of successful jobs for debugging
+            $this->archiveFailedJobs($where);
+        }
+
+        if (php_sapi_name() === 'cli') {
+            $this->output->writeln($logMessage);
+        }
     }
 
     /**
@@ -254,29 +304,7 @@ class Queue
             try {
                 $this->processJob($job);
             } catch (Exception $e) {
-                $this->noOfFailedJobs++;
-
-                // Log error information
-                $logMessage = 'Queue processing ' . $job->getPid() . ' [KO]:
-                    Class: ' . $job->getClass() . ',
-                    Method: ' . $job->getMethod() . ',
-                    Parameters: ' . json_encode($job->getDecodedData());
-                $this->logger->log($logMessage);
-
-                $logMessage = date('c') . ' ERROR: ' . get_class($e) . ':
-                    ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() .
-                    "\nStack trace:\n" . $e->getTraceAsString();
-                $this->logger->log($logMessage);
-
-                $this->db->update($this->table, [
-                    'pid' => null,
-                    'retries' => new Zend_Db_Expr('retries + 1'),
-                    'error_log' => $logMessage,
-                ], ['job_id IN (?)' => $job->getMergedIds()]);
-
-                if (php_sapi_name() === 'cli') {
-                    $this->output->writeln($logMessage);
-                }
+                $this->handleFailedJob($job, $e);
             }
         }
 
@@ -287,18 +315,18 @@ class Queue
     }
 
     /**
-     * Archive failed jobs - should be same criteria as jobs deleted
+     * Archive failed jobs - should be same criteria as jobs deleted when performing cleanup
      * @see clearOldFailingJobs
      * @return void
      */
-    protected function archiveFailedJobs() : void
+    protected function archiveFailedJobs(string $whereClause = self::FAILED_JOB_ARCHIVE_CRITERIA) : void
     {
         $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'debug'];
         $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'debug'];
         $this->archiveJobs(
             $sourceColumns,
             $targetColumns,
-            self::FAILED_JOB_ARCHIVE_CRITERIA);
+            $whereClause);
     }
 
     /**
@@ -329,7 +357,7 @@ class Queue
      * @param string $whereClause
      * @return void
      */
-    protected function archiveSuccessfulJob(string $whereClause): void {
+    protected function archiveSuccessfulJobs(string $whereClause): void {
         $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'];
         $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'success', 'debug'];
         $this->archiveJobs(
