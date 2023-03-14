@@ -24,7 +24,7 @@ class Queue
     public const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
     public const ERROR_LOG = 'algoliasearch_queue_errors.log';
 
-    public const FAILED_JOB_ARCHIVE_CRITERIA = 'retries > max_retries';
+    public const FAILED_JOB_ARCHIVE_CRITERIA = 'retries >= max_retries';
 
     /** @var AdapterInterface */
     protected $db;
@@ -653,7 +653,10 @@ class Queue
      */
     protected function clearOldFailingJobs()
     {
-        $this->archiveFailedJobs();
+        // Enhanced archive will have already logged this failure
+        if (!$this->configHelper->isEnhancedQueueArchiveEnabled()) {
+            $this->archiveFailedJobs();
+        }
         // DEBUG:
         // $this->archiveJobs('1 = 1');
         $this->db->delete($this->table, self::FAILED_JOB_ARCHIVE_CRITERIA);
