@@ -33,7 +33,7 @@
     },
     "algoliasearch_queue_archive": {
         "column": {
-            "job_id": true,
+            "archive_id": true,
             "pid": true,
             "class": true,
             "method": true,
