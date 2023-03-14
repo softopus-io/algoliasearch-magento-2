@@ -358,7 +358,7 @@ class Queue
      * @return void
      */
     protected function archiveSuccessfulJobs(string $whereClause): void {
-        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'];
+        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'CONVERT(\'\', CHAR)', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'];
         $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'success', 'debug'];
         $this->archiveJobs(
             $sourceColumns,
