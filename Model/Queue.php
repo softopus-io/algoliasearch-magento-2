@@ -24,6 +24,8 @@ class Queue
     public const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
     public const ERROR_LOG = 'algoliasearch_queue_errors.log';
 
+    public const FAILED_JOB_ARCHIVE_CRITERIA = 'retries > max_retries';
+
     /** @var AdapterInterface */
     protected $db;
 
@@ -203,6 +205,26 @@ class Queue
     }
 
     /**
+     * @param Job $job
+     * @return void
+     * @throws \Exception
+     */
+    protected function processJob(Job $job) {
+        $job->execute();
+
+        $successWhere = sprintf('job_id IN (%s)',implode(',', $job->getMergedIds()));
+
+        if ($this->configHelper->isEnhancedQueueArchiveEnabled()) {
+            $this->archiveSuccessfulJob($successWhere);
+        }
+
+        // Delete one by one
+        $this->db->delete($this->table, $successWhere);
+
+        $this->logRecord['processed_jobs'] += count($job->getMergedIds());
+    }
+
+    /**
      * @param int $maxJobs
      *
      * @throws Exception
@@ -230,12 +252,7 @@ class Queue
             }
 
             try {
-                $job->execute();
-
-                // Delete one by one
-                $this->db->delete($this->table, ['job_id IN (?)' => $job->getMergedIds()]);
-
-                $this->logRecord['processed_jobs'] += count($job->getMergedIds());
+                $this->processJob($job);
             } catch (Exception $e) {
                 $this->noOfFailedJobs++;
 
@@ -266,33 +283,60 @@ class Queue
         $isFullReindex = ($maxJobs === -1);
         if ($isFullReindex) {
             $this->run(-1);
-
-            return;
         }
     }
 
     /**
-     * @param string $whereClause
+     * Archive failed jobs - should be same criteria as jobs deleted
+     * @see clearOldFailingJobs
+     * @return void
      */
-    protected function archiveFailedJobs($whereClause)
+    protected function archiveFailedJobs() : void
     {
+        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'debug'];
+        $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'debug'];
+        $this->archiveJobs(
+            $sourceColumns,
+            $targetColumns,
+            self::FAILED_JOB_ARCHIVE_CRITERIA);
+    }
+
+    /**
+     * Archive jobs based on desired columns and where clause filter criteria
+     *
+     * @param array $sourceColumns
+     * @param array $targetColumns
+     * @param string $whereClause
+     * @return void
+     */
+    protected function archiveJobs(array $sourceColumns, array $targetColumns, string $whereClause): void {
         $select = $this->db->select()
-            ->from($this->table, ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'debug'])
+            ->from($this->table, $sourceColumns)
             ->where($whereClause);
 
         $query = $this->db->insertFromSelect(
             $select,
             $this->archiveTable,
-            ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'debug']
+            $targetColumns
         );
 
         $this->db->query($query);
     }
 
-    // stubs
-    protected function archiveJobs($whereClause): void {}
-
-    protected function archiveSuccessfulJob($whereClause): void {}
+    /**
+     * Archive a successful job - based on supplied where clause criteria
+     *
+     * @param string $whereClause
+     * @return void
+     */
+    protected function archiveSuccessfulJob(string $whereClause): void {
+        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'];
+        $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'success', 'debug'];
+        $this->archiveJobs(
+            $sourceColumns,
+            $targetColumns,
+            $whereClause);
+    }
 
     /**
      * @param int $maxJobs
@@ -581,10 +625,10 @@ class Queue
      */
     protected function clearOldFailingJobs()
     {
-        $this->archiveFailedJobs('retries > max_retries');
+        $this->archiveFailedJobs();
         // DEBUG:
-        // $this->archiveFailedJobs('1 = 1');
-        $this->db->delete($this->table, 'retries > max_retries');
+        // $this->archiveJobs('1 = 1');
+        $this->db->delete($this->table, self::FAILED_JOB_ARCHIVE_CRITERIA);
     }
 
     /**
