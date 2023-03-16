@@ -221,7 +221,7 @@ class Queue
      * @return void
      * @throws \Exception
      */
-    protected function processJob(Job $job) {
+    protected function processJob(Job $job): void {
         $job->execute();
 
         $where = $this->jobToWhereClause($job);
@@ -259,7 +259,6 @@ class Queue
         $where = $this->jobToWhereClause($job);
 
         $this->db->update($this->table, [
-            'pid' => null,
             'retries' => new Zend_Db_Expr('retries + 1'),
             'error_log' => $logMessage,
         ], $where);
@@ -268,6 +267,11 @@ class Queue
             // Record *every* instance of a failed job in context of successful jobs for debugging
             $this->archiveFailedJobs($where);
         }
+
+        // Do not nullify PID until archived (want to preserve for debugging to identify potential multi thread interlacing)
+        $this->db->update($this->table, [
+            'pid' => null,
+        ], $where);
 
         if (php_sapi_name() === 'cli') {
             $this->output->writeln($logMessage);
@@ -315,21 +319,6 @@ class Queue
     }
 
     /**
-     * Archive failed jobs - should be same criteria as jobs deleted when performing cleanup
-     * @see clearOldFailingJobs
-     * @return void
-     */
-    protected function archiveFailedJobs(string $whereClause = self::FAILED_JOB_ARCHIVE_CRITERIA) : void
-    {
-        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'debug'];
-        $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'debug'];
-        $this->archiveJobs(
-            $sourceColumns,
-            $targetColumns,
-            $whereClause);
-    }
-
-    /**
      * Archive jobs based on desired columns and where clause filter criteria
      *
      * @param array $sourceColumns
@@ -349,6 +338,21 @@ class Queue
         );
 
         $this->db->query($query);
+    }
+
+    /**
+     * Archive failed jobs - should be same criteria as jobs deleted when performing cleanup
+     * @see clearOldFailingJobs
+     * @return void
+     */
+    protected function archiveFailedJobs(string $whereClause = self::FAILED_JOB_ARCHIVE_CRITERIA) : void
+    {
+        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'debug'];
+        $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'debug'];
+        $this->archiveJobs(
+            $sourceColumns,
+            $targetColumns,
+            $whereClause);
     }
 
     /**
@@ -630,6 +634,14 @@ class Queue
                 'locked_at' => date('Y-m-d H:i:s'),
                 'pid' => $pid,
             ], ['job_id IN (?)' => $jobsIds]);
+        }
+
+        // Persist to local objects for later reference and to address bugs where referenced data in object is not present
+        // Not modifying persistence logic atm
+        // TODO: Implement repository pattern / service contracts for jobs
+        foreach ($jobs as $job) {
+            $job->setData('pid', getmypid());
+            $job->setData('locked_at', date('Y-m-d H:i:s'));
         }
     }
 
