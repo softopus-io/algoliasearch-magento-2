@@ -25,6 +25,7 @@ class Queue
     public const ERROR_LOG = 'algoliasearch_queue_errors.log';
 
     public const FAILED_JOB_ARCHIVE_CRITERIA = 'retries >= max_retries';
+    public const MOVE_INDEX_METHOD_NAME = 'moveIndexWithSetSettings';
 
     /** @var AdapterInterface */
     protected $db;
@@ -298,7 +299,8 @@ class Queue
             // If there are some failed jobs before move, we want to skip the move
             // as most probably not all products have prices reindexed
             // and therefore are not indexed yet in TMP index
-            if ($job->getMethod() === 'moveIndex' && $this->noOfFailedJobs > 0) {
+            // TODO: Refactor this
+            if ($job->getMethod() === self::MOVE_INDEX_METHOD_NAME && $this->noOfFailedJobs > 0) {
                 // Set pid to NULL so it's not deleted after
                 $this->db->update($this->table, ['pid' => null], ['job_id = ?' => $job->getId()]);
 
