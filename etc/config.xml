@@ -34,11 +34,6 @@
                 <custom_ranking_category_attributes><![CDATA[{"_1600352142072_72":{"attribute":"product_count","order":"desc"}}]]></custom_ranking_category_attributes>
             </categories>
         </algoliasearch_categories>
-        <algoliasearch_queue>
-            <queue>
-                <enhanced_archive>0</enhanced_archive>
-            </queue>
-        </algoliasearch_queue>
         <algoliasearch_personalization>
             <personalization_group>
                 <personalization_click_events_group>
@@ -70,6 +65,11 @@
             <advanced>
                 <max_record_size_limit>10000</max_record_size_limit>
             </advanced>
+            <queue>
+                <number_of_element_by_page>300</number_of_element_by_page>
+                <archive_clear_limit>30</archive_clear_limit>
+                <enhanced_archive>0</enhanced_archive>
+            </queue>
         </algoliasearch_advanced>
     </default>
 </config>
