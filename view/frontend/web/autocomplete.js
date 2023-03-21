@@ -405,6 +405,17 @@ define(
                         transformSource({ source }) {
                             return {
                                 ...source,
+                                getItems(arg) {
+                                    const getItems = source.getItems(arg);
+                                    return {
+                                        ...getItems,
+                                        transformResponse(res) {
+                                            console.log("Cap at:", data.hitsPerPage);
+                                            const transformed = getItems.transformResponse(res).slice(0, data.hitsPerPage);
+                                            return transformed;
+                                        }
+                                    }
+                                },
                                 getItemUrl({ item }) {
                                     return getNavigatorUrl(algoliaConfig.resultPageUrl+`?q=${item.query}`);
                                 },
