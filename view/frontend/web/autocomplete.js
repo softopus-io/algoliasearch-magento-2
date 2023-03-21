@@ -410,9 +410,8 @@ define(
                                     return {
                                         ...getItems,
                                         transformResponse(res) {
-                                            console.log("Cap at:", data.hitsPerPage);
-                                            const transformed = getItems.transformResponse(res).slice(0, data.hitsPerPage);
-                                            return transformed;
+                                            // Cap results to algoliaConfig.autocomplete.nbOfQueriesSuggestions
+                                            return getItems.transformResponse(res).slice(0, data.hitsPerPage);
                                         }
                                     }
                                 },
