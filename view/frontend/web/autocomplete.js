@@ -408,19 +408,14 @@ define(
                         querySuggestionsPlugin = algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
                             searchClient,
                             indexName: data.paramName.indexName,
+                            getSearchParams() {
+                                return {
+                                    hitsPerPage: data.hitsPerPage
+                                }
+                            },
                             transformSource({source}) {
                                 return {
                                     ...source,
-                                    getItems(arg) {
-                                        const getItems = source.getItems(arg);
-                                        return {
-                                            ...getItems,
-                                            transformResponse(res) {
-                                                // Cap results to algoliaConfig.autocomplete.nbOfQueriesSuggestions
-                                                return getItems.transformResponse(res).slice(0, data.hitsPerPage);
-                                            }
-                                        }
-                                    },
                                     getItemUrl({item}) {
                                         return getNavigatorUrl(algoliaConfig.resultPageUrl + `?q=${item.query}`);
                                     },
