@@ -982,7 +982,7 @@ class ProductHelper
         }
 
         if (is_array($values) && count($values) > 0) {
-            $customData[$attributeName] = array_values(array_unique($values));
+            $customData[$attributeName] = $this->getSanitizedArrayValues($values, $attributeName);
         }
 
         if (count($subProductImages) > 0) {
@@ -993,12 +993,27 @@ class ProductHelper
     }
 
     /**
-     * @param $valueText
-     * @param Product $subProduct
-     * @param AttributeResource $attributeResource
+     * By default Algolia will remove all redundant attribute values that are fetched from the child simple products.
+     *
+     * Overridable via Preference to allow implementer to enforce their own uniqueness rules while leveraging existing indexing code.
+     * e.g. $values = (in_array($attributeName, self::NON_UNIQUE_ATTRIBUTES)) ? $values : array_unique($values);
+     *
+     * @param array $values
+     * @param string $attributeName
      * @return array
      */
-    protected function getValues($valueText, Product $subProduct, AttributeResource $attributeResource)
+    protected function getSanitizedArrayValues(array $values, string $attributeName): array
+    {
+        return array_values(array_unique($values));
+    }
+
+    /**
+     * @param string|array $valueText - bit of a misnomer - essentially the retrieved values to be indexed for a given product's attribute
+     * @param Product $subProduct - the simple product to index
+     * @param AttributeResource $attributeResource - the attribute being indexed
+     * @return array
+     */
+    protected function getValues($valueText, Product $subProduct, AttributeResource $attributeResource): array
     {
         $values = [];
 
