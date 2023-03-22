@@ -280,7 +280,8 @@ define(
                     name: section.name,
                     hitsPerPage: section.hitsPerPage,
                     paramName: suggestions_index,
-                    options
+                    options,
+                    label: section.label
                 };
             } else {
                 /** If is not products, categories, pages or suggestions, it's additional section **/
