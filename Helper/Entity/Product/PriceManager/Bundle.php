@@ -49,6 +49,7 @@ class Bundle extends ProductWithChildren
         $maxOriginalPrice = $product->getPriceInfo()->getPrice('regular_price')->getMaximalPrice()->getValue();
         $max = $product->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
         $minArray = [];
+        $maxArray = [];
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $product->setData('customer_group_id', $groupId);
