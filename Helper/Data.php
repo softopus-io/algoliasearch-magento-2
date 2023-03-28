@@ -16,6 +16,7 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Search\Model\Query;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
@@ -77,6 +78,10 @@ class Data
 
     protected $emulationRuns = false;
 
+    /** @var \Magento\Framework\Indexer\IndexerInterface */
+    private $priceIndexer;
+
+
     /**
      * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
@@ -93,20 +98,23 @@ class Data
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
-        AlgoliaHelper $algoliaHelper,
-        ConfigHelper $configHelper,
-        ProductHelper $producthelper,
-        CategoryHelper $categoryHelper,
-        PageHelper $pageHelper,
-        SuggestionHelper $suggestionHelper,
+        AlgoliaHelper           $algoliaHelper,
+        ConfigHelper            $configHelper,
+        ProductHelper           $producthelper,
+        CategoryHelper          $categoryHelper,
+        PageHelper              $pageHelper,
+        SuggestionHelper        $suggestionHelper,
         AdditionalSectionHelper $additionalSectionHelper,
-        Emulation $emulation,
-        Logger $logger,
-        ResourceConnection $resource,
-        ManagerInterface $eventManager,
-        ScopeCodeResolver $scopeCodeResolver,
-        StoreManagerInterface $storeManager
-    ) {
+        Emulation               $emulation,
+        Logger                  $logger,
+        ResourceConnection      $resource,
+        ManagerInterface        $eventManager,
+        ScopeCodeResolver       $scopeCodeResolver,
+        StoreManagerInterface   $storeManager,
+        IndexerRegistry         $indexerRegistry
+
+    )
+    {
         $this->algoliaHelper = $algoliaHelper;
         $this->pageHelper = $pageHelper;
         $this->categoryHelper = $categoryHelper;
@@ -120,6 +128,8 @@ class Data
         $this->eventManager = $eventManager;
         $this->scopeCodeResolver = $scopeCodeResolver;
         $this->storeManager = $storeManager;
+
+        $this->priceIndexer = $indexerRegistry->get('catalog_product_price');
     }
 
     /**
@@ -169,15 +179,15 @@ class Data
         }
 
         $params = [
-            'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
-            'attributesToRetrieve'   => 'objectID',
-            'attributesToHighlight'  => '',
-            'attributesToSnippet'    => '',
-            'numericFilters'         => ['visibility_search=1'],
+            'hitsPerPage' => $numberOfResults, // retrieve all the hits (hard limit is 1000)
+            'attributesToRetrieve' => 'objectID',
+            'attributesToHighlight' => '',
+            'attributesToSnippet' => '',
+            'numericFilters' => ['visibility_search=1'],
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
-            'analyticsTags'          => 'backend-search',
-            'facets'                 => $facetsToRetrieve,
-            'maxValuesPerFacet'      => 100,
+            'analyticsTags' => 'backend-search',
+            'facets' => $facetsToRetrieve,
+            'maxValuesPerFacet' => 100,
         ];
 
         if (is_array($searchParams)) {
@@ -194,7 +204,7 @@ class Data
             if ($productId) {
                 $data[$productId] = [
                     'entity_id' => $productId,
-                    'score'     => $numberOfResults - $i,
+                    'score' => $numberOfResults - $i,
                 ];
             }
         }
@@ -400,6 +410,8 @@ class Data
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
+
+        $this->checkPriceIndex($productIds);
 
         $this->startEmulation($storeId);
         $this->logger->start('Indexing');
@@ -622,9 +634,9 @@ class Data
      * @param \Magento\Catalog\Model\ResourceModel\Category\Collection $collection
      * @param array|null $potentiallyDeletedCategoriesIds
      *
+     * @return array
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      *
-     * @return array
      */
     protected function getCategoryRecords($storeId, $collection, $potentiallyDeletedCategoriesIds = null)
     {
@@ -692,7 +704,8 @@ class Data
         $emulationInfo = null,
         $productIds = null,
         $useTmpIndex = false
-    ) {
+    )
+    {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
@@ -854,7 +867,7 @@ class Data
                 ->columns(['total_ordered' => new \Zend_Db_Expr('SUM(row_total)')])
                 ->where('product_id IN (?)', $ids)
                 ->group('product_id');
-            $salesData = $salesConnection->fetchAll($select, [], \PDO::FETCH_GROUP|\PDO::FETCH_ASSOC|\PDO::FETCH_UNIQUE);
+            $salesData = $salesConnection->fetchAll($select, [], \PDO::FETCH_GROUP | \PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
         }
         return $salesData;
     }
@@ -943,4 +956,18 @@ class Data
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
         $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName);
     }
+
+    /**
+     * If the price index is stale
+     * @param array $productIds
+     * @return void
+     */
+    protected function checkPriceIndex(array $productIds): void
+    {
+        $state = $this->priceIndexer->getState()->getStatus();
+        if ($state === \Magento\Framework\Indexer\StateInterface::STATUS_INVALID) {
+            $this->priceIndexer->reindexList($productIds);
+        }
+    }
+
 }
