@@ -410,12 +410,12 @@ class ProductHelper
         $attributesForFaceting = $this->getAttributesForFaceting($storeId);
 
         $indexSettings = [
-            'searchableAttributes' => $searchableAttributes,
-            'customRanking' => $customRanking,
+            'searchableAttributes'    => $searchableAttributes,
+            'customRanking'           => $customRanking,
             'unretrievableAttributes' => $unretrievableAttributes,
-            'attributesForFaceting' => $attributesForFaceting,
-            'maxValuesPerFacet' => (int)$this->configHelper->getMaxValuesPerFacet($storeId),
-            'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
+            'attributesForFaceting'   => $attributesForFaceting,
+            'maxValuesPerFacet'       => (int)$this->configHelper->getMaxValuesPerFacet($storeId),
+            'removeWordsIfNoResults'  => $this->configHelper->getRemoveWordsIfNoResult($storeId),
         ];
 
         // Additional index settings from event observer
@@ -583,16 +583,16 @@ class ProductHelper
 
         $urlParams = [
             '_secure' => $this->configHelper->useSecureUrlsInFrontend($product->getStoreId()),
-            '_nosid' => true,
+            '_nosid'  => true,
         ];
 
         $customData = [
-            'objectID' => $product->getId(),
-            'name' => $product->getName(),
-            'url' => $product->getUrlModel()->getUrl($product, $urlParams),
-            'visibility_search' => (int)(in_array($visibility, $visibleInSearch)),
+            'objectID'           => $product->getId(),
+            'name'               => $product->getName(),
+            'url'                => $product->getUrlModel()->getUrl($product, $urlParams),
+            'visibility_search'  => (int)(in_array($visibility, $visibleInSearch)),
             'visibility_catalog' => (int)(in_array($visibility, $visibleInCatalog)),
-            'type_id' => $product->getTypeId(),
+            'type_id'            => $product->getTypeId(),
         ];
 
         $additionalAttributes = $this->getAdditionalAttributes($product->getStoreId());
@@ -612,7 +612,11 @@ class ProductHelper
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_subproducts_index',
-            ['custom_data' => $transport, 'sub_products' => $subProducts, 'productObject' => $product]
+            [
+                'custom_data'   => $transport,
+                'sub_products'  => $subProducts,
+                'productObject' => $product
+            ]
         );
         $customData = $transport->getData();
         $customData = array_merge($customData, $defaultData);
@@ -620,7 +624,11 @@ class ProductHelper
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_after_create_product_object',
-            ['custom_data' => $transport, 'sub_products' => $subProducts, 'productObject' => $product]
+            [
+                'custom_data'   => $transport,
+                'sub_products'  => $subProducts,
+                'productObject' => $product
+            ]
         );
         $customData = $transport->getData();
 

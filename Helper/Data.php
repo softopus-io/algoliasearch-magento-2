@@ -179,15 +179,15 @@ class Data
         }
 
         $params = [
-            'hitsPerPage' => $numberOfResults, // retrieve all the hits (hard limit is 1000)
-            'attributesToRetrieve' => 'objectID',
-            'attributesToHighlight' => '',
-            'attributesToSnippet' => '',
-            'numericFilters' => ['visibility_search=1'],
+            'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
+            'attributesToRetrieve'   => 'objectID',
+            'attributesToHighlight'  => '',
+            'attributesToSnippet'    => '',
+            'numericFilters'         => ['visibility_search=1'],
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
-            'analyticsTags' => 'backend-search',
-            'facets' => $facetsToRetrieve,
-            'maxValuesPerFacet' => 100,
+            'analyticsTags'          => 'backend-search',
+            'facets'                 => $facetsToRetrieve,
+            'maxValuesPerFacet'      => 100,
         ];
 
         if (is_array($searchParams)) {
@@ -579,7 +579,11 @@ class Data
         $transport = new ProductDataArray();
         $this->eventManager->dispatch(
             'algolia_product_collection_add_additional_data',
-            ['collection' => $collection, 'store_id' => $storeId, 'additional_data' => $transport]
+            [
+                'collection'      => $collection,
+                'store_id'        => $storeId,
+                'additional_data' => $transport
+            ]
         );
 
         /** @var Product $product */
@@ -680,7 +684,7 @@ class Data
         }
 
         return [
-            'toIndex' => $categoriesToIndex,
+            'toIndex'  => $categoriesToIndex,
             'toRemove' => array_unique($categoriesToRemove),
         ];
     }
@@ -734,7 +738,10 @@ class Data
 
         $this->eventManager->dispatch(
             'algolia_before_products_collection_load',
-            ['collection' => $collection, 'store' => $storeId]
+            [
+                'collection' => $collection,
+                'store'      => $storeId
+            ]
         );
         $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
             collection page: ' . $page . ',
@@ -884,7 +891,7 @@ class Data
         $objectIds = [];
         $counter = 0;
         $browseOptions = [
-            'query' => '',
+            'query'                => '',
             'attributesToRetrieve' => ['objectID'],
         ];
         foreach ($index->browseObjects($browseOptions) as $hit) {
@@ -931,7 +938,7 @@ class Data
         $indexNames = [];
         $indexNames[0] = [
             'indexName' => $this->getBaseIndexName(),
-            'priceKey' => '.' . $this->configHelper->getCurrencyCode() . '.default',
+            'priceKey'  => '.' . $this->configHelper->getCurrencyCode() . '.default',
         ];
         foreach ($this->storeManager->getStores() as $store) {
             $indexNames[$store->getId()] = [
