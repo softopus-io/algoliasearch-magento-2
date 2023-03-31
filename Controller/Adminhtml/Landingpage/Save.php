@@ -99,7 +99,7 @@ class Save extends AbstractAction
 
             if (isset($data['algolia_configuration']) && $data['algolia_configuration'] != $data['configuration']) {
                 $data['configuration'] = $data['algolia_configuration'];
-                if ($this->configHelper->isCustomerGroupsEnabled($data['store_id'])) {
+                if ($this->configHelper->isCustomerGroupsEnabled($data['store_id']) && isset($configuration['price'.$data['price_key']])) {
                     $configuration = json_decode($data['algolia_configuration'], true);
                     $priceConfig = $configuration['price'.$data['price_key']];
                     $customerGroups = $this->customerGroupCollectionFactory->create();
