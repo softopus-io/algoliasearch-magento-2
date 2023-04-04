@@ -1,5 +1,24 @@
 # CHANGE LOG
 
+## 3.10.2
+
+### UPDATES
+- Ensured compatibility of the extension with Magento 2.4.6
+- Updated the code to allow for convenient customization of object serialization
+- Enhanced comments for non-castable attributes in system configuration
+- Added new code to resolve pricing issues with bundle products when the dynamic price attribute is disabled
+- Updated autocomplete to include userToken and enablePersonalization tag in search requests
+
+
+
+### Bug Fixes
+- Fixed issue with section.label in autocomplete
+- Resolved issue with nbOfQuerySuggestions in autocomplete
+- Fixed routing error related to disabling searchBox for instant search page
+- Resolved deployment issue with prefixed Magento database tables
+- Fixed spacing issue with pagination on instant search page
+
+
 ## 3.10.1
 
 ### UPDATES
