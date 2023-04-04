@@ -6,7 +6,7 @@
 - Ensured compatibility of the extension with Magento 2.4.6
 - Updated the code to allow for convenient customization of object serialization
 - Enhanced comments for non-castable attributes in system configuration
-- Added new code to resolve pricing issues with bundle products when the dynamic price attribute is disabled
+- Updated the code to ensure that accurate prices are indexed for bundle products when the dynamic price attribute is turned off
 - Updated autocomplete to include userToken and enablePersonalization tag in search requests
 
 
