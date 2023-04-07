@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.7.0-p2
+
+### FIXES
+- Fixed the Magento 2.4.6 compatibility
+
 ## 3.7.0-p1
 
 ### FIXES
