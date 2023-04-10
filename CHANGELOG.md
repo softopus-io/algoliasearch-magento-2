@@ -2,8 +2,8 @@
 
 ## 3.7.0-p2
 
-### FIXES
-- Fixed the Magento 2.4.6 compatibility
+### Updates
+- Ensured compatibility of the extension with Magento 2.4.6
 
 ## 3.7.0-p1
 
