@@ -550,8 +550,8 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
 
     $(function ($) {
         $(algoliaConfig.autocomplete.selector).each(function () {
-            $(this).closest('form').submit(function (e) {
-                var query = $(this).find(algoliaConfig.autocomplete.selector).val();
+            $(this).closest('form').on('submit', function (e) {
+                let query = $(this).find(algoliaConfig.autocomplete.selector).val();
 
                 query = encodeURIComponent(query);
 
