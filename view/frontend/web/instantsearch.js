@@ -3,6 +3,7 @@ define(
         'algoliaBundle',
         'Magento_Catalog/js/price-utils',
         'common',
+        'insights',
         'hooks'
     ],
     function (algoliaBundle, priceUtils) {

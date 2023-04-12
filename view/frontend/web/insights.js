@@ -3,6 +3,7 @@ define(
         'jquery',
         'algoliaAnalytics',
         'algoliaBundle',
+        'common'
     ],
     function ($, algoliaAnalyticsWrapper, algoliaBundle) {
         algoliaAnalytics = algoliaAnalyticsWrapper.default;

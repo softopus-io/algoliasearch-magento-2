@@ -7,6 +7,7 @@ define(
         'suggestionsHtml',
         'additionalHtml',
         'common',
+        'insights',
         'hooks',
         'domReady!'
     ],
