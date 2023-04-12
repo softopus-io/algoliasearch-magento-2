@@ -5,7 +5,6 @@ define(
         'algoliaBundle',
     ],
     function ($, algoliaAnalyticsWrapper, algoliaBundle) {
-        console.log("Running insights.js...");
         algoliaAnalytics = algoliaAnalyticsWrapper.default;
 
         window.algoliaInsights = {

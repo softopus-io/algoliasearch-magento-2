@@ -17,8 +17,6 @@ define(
         let suggestionSection = false;
         let algoliaFooter;
 
-        console.log("Running autocomplete.js...");
-
         /** We have nothing to do here if autocomplete is disabled **/
         if (!algoliaConfig.autocomplete.enabled) {
             return;
@@ -380,7 +378,7 @@ define(
                 if (algoliaConfig.removeBranding === false) {
                     algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
                 }
-                console.log("Triggering beforeAutocompleteSources");
+
                 sources = algolia.triggerHooks('beforeAutocompleteSources', sources, algolia_client, algoliaBundle);
                 options = algolia.triggerHooks('beforeAutocompleteOptions', options);
 

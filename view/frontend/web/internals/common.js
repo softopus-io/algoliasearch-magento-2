@@ -1,5 +1,5 @@
 define(['algoliaBundle'], function (algoliaBundle) {
-    console.log("Running common.js...");
+
     window.algolia = {
         allowedHooks: [
             'beforeAutocompleteSources',
