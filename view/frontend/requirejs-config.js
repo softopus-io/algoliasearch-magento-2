@@ -1,8 +1,12 @@
 var config = {
 	map: {
 		'*': {
+            // FE libs
 			'autocomplete': 'Algolia_AlgoliaSearch/autocomplete',
-			// Autocomplete templates
+            'instantsearch': 'Algolia_AlgoliaSearch/instantsearch',
+            'hooks': 'Algolia_AlgoliaSearch/hooks',
+
+            // Autocomplete templates
 			'productsHtml': 'Algolia_AlgoliaSearch/internals/template/autocomplete/products',
 			'pagesHtml': 'Algolia_AlgoliaSearch/internals/template/autocomplete/pages',
 			'categoriesHtml': 'Algolia_AlgoliaSearch/internals/template/autocomplete/categories',
@@ -21,8 +25,9 @@ var config = {
 		'rangeSlider': 'Algolia_AlgoliaSearch/navigation/range-slider-widget',
 	},
 	deps: [
-		'autocomplete'
-	],
+        'autocomplete',
+        'instantsearch'
+    ],
 	config: {
 		mixins: {
 			'Magento_Catalog/js/catalog-add-to-cart': {
