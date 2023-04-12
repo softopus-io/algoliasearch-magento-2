@@ -1,4 +1,4 @@
-define(['algoliaBundle', 'Magento_Catalog/js/price-utils', 'hooks'], function (algoliaBundle, priceUtils) {
+define(['algoliaBundle', 'Magento_Catalog/js/price-utils', 'common', 'hooks'], function (algoliaBundle, priceUtils) {
 	console.log("Running instantsearch.js...");
 	algoliaBundle.$(function ($) {
 		/** We have nothing to do here if instantsearch is not enabled **/

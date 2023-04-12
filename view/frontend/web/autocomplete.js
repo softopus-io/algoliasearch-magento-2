@@ -6,6 +6,7 @@ define(
         'productsHtml',
         'suggestionsHtml',
         'additionalHtml',
+        'common',
         'hooks',
         'domReady!'
     ],
