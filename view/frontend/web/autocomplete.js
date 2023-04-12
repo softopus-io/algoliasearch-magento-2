@@ -7,9 +7,9 @@ define(
         'productsHtml',
         'suggestionsHtml',
         'additionalHtml',
-        'common',
-        'insights',
-        'hooks',
+        'algoliaCommon',
+        'algoliaInsights',
+        'algoliaHooks',
         'domReady!'
     ],
     function ($, algoliaBundle, pagesHtml, categoriesHtml, productsHtml, suggestionsHtml, additionalHtml) {

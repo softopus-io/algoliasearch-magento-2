@@ -2,9 +2,9 @@ define(
     [
         'algoliaBundle',
         'Magento_Catalog/js/price-utils',
-        'common',
-        'insights',
-        'hooks'
+        'algoliaCommon',
+        'algoliaInsights',
+        'algoliaHooks'
     ],
     function (algoliaBundle, priceUtils) {
         algoliaBundle.$(function ($) {
