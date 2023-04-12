@@ -161,7 +161,7 @@ define(
                 return hit;
             };
 
-            const getAutocompleteSource = function (section, algolia_client, i) {
+            const getAutocompleteSource = function (section, algolia_client) {
                 let options = {
                     hitsPerPage: section.hitsPerPage || DEFAULT_HITS_PER_SECTION,
                     analyticsTags: 'autocomplete',
@@ -169,7 +169,7 @@ define(
                     distinct: true
                 };
 
-                let source;
+                const defaultSectionIndex = `${algoliaConfig.indexName}_${section.name}`;
 
                 if (section.name === "products") {
                     options.facets = ['categories.level0'];
@@ -178,10 +178,9 @@ define(
 
                     options = algolia.triggerHooks('beforeAutocompleteProductSourceOptions', options);
 
-                    source = {
-                        name: section.name,
-                        hitsPerPage: section.hitsPerPage,
-                        paramName: algolia_client.initIndex(algoliaConfig.indexName + "_" + section.name),
+                    return {
+                        ...section,
+                        paramName: algolia_client.initIndex(defaultSectionIndex),
                         options,
                         templates: {
                             noResults({html}) {
@@ -236,10 +235,9 @@ define(
                     if (section.name === "categories" && algoliaConfig.showCatsNotIncludedInNavigation === false) {
                         options.numericFilters = 'include_in_menu=1';
                     }
-                    source = {
-                        name: section.name || i,
-                        hitsPerPage: section.hitsPerPage,
-                        paramName: algolia_client.initIndex(algoliaConfig.indexName + "_" + section.name),
+                    return {
+                        ...section,
+                        paramName: algolia_client.initIndex(defaultSectionIndex),
                         options,
                         templates: {
                             noResults({html}) {
@@ -257,10 +255,9 @@ define(
                         }
                     };
                 } else if (section.name === "pages") {
-                    source = {
-                        name: section.name || i,
-                        hitsPerPage: section.hitsPerPage,
-                        paramName: algolia_client.initIndex(algoliaConfig.indexName + "_" + section.name),
+                    return {
+                        ...section,
+                        paramName: algolia_client.initIndex(defaultSectionIndex),
                         options,
                         templates: {
                             noResults({html}) {
@@ -278,22 +275,18 @@ define(
                         }
                     };
                 } else if (section.name === "suggestions") {
-                    const suggestions_index = algolia_client.initIndex(algoliaConfig.indexName + "_suggestions");
-                    source = {
+                    return {
+                        ...section,
+                        paramName: algolia_client.initIndex(defaultSectionIndex),
                         displayKey: 'query',
-                        name: section.name,
-                        hitsPerPage: section.hitsPerPage,
-                        paramName: suggestions_index,
-                        options,
-                        label: section.label
+                        options
                     };
                 } else {
                     /** If is not products, categories, pages or suggestions, it's additional section **/
-                    source = {
-                        paramName: algolia_client.initIndex(algoliaConfig.indexName + "_section_" + section.name),
+                    return {
+                        ...section,
+                        paramName: algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`),
                         displayKey: 'value',
-                        name: section.name || i,
-                        hitsPerPage: section.hitsPerPage,
                         options,
                         templates: {
                             noResults({html}) {
@@ -311,8 +304,6 @@ define(
                         }
                     };
                 }
-
-                return source;
             };
 
             const getNavigatorUrl = function (url) {
@@ -347,6 +338,9 @@ define(
                 });
             }
 
+            /** Setup autocomplete data sources **/
+            let sources = algoliaConfig.autocomplete.sections.map(section => getAutocompleteSource(section, algolia_client));
+
             /**
              * Setup the autocomplete search input
              * For autocomplete feature is used Algolia's autocomplete.js library
@@ -354,7 +348,6 @@ define(
              **/
             $(algoliaConfig.autocomplete.selector).each(function () {
                 let querySuggestionsPlugin = "";
-                let sources = [];
                 let autocompleteConfig = [];
                 let options = {
                     container: algoliaConfig.autocomplete.selector,
@@ -394,24 +387,6 @@ define(
                     sources = hookResult.shift();
                     options = hookResult.shift();
                 }
-
-                /** Setup autocomplete data sources **/
-                let i = 0;
-                $.each(algoliaConfig.autocomplete.sections, function (...[, section]) {
-                    const source = getAutocompleteSource(section, algolia_client, i);
-
-                    if (source) {
-                        sources.push(source);
-                    }
-
-                    /** TODO: Review this block - appears to only apply to Autocomplete v0 with Hogan templates which is now unsupported
-                     * e.g. view/frontend/templates/autocomplete/menu.phtml **/
-                    /** Those sections have already specific placeholder,
-                     * so do not use the default aa-dataset-{i} class to specify the placeholder **/
-                    if (section.name !== 'suggestions' && section.name !== 'products') {
-                        i++;
-                    }
-                });
 
                 sources.forEach(function (data) {
                     if (data.name === "suggestions") {
