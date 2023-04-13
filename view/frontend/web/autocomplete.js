@@ -207,7 +207,7 @@ define(
                 options,
                 getItemUrl,
                 transformResponse,
-                paramName: algolia_client.initIndex(defaultSectionIndex)
+                index: algolia_client.initIndex(defaultSectionIndex)
             };
 
             if (section.name === "products") {
@@ -347,7 +347,7 @@ define(
                     });
             } else {
                 /** If is not products, categories, pages or suggestions, it's additional section **/
-                source.paramName = algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`);
+                source.index = algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`);
                 source.templates = {
                         noResults({html}) {
                             return additionalHtml.getNoResultHtml({html});
@@ -398,7 +398,7 @@ define(
         /** Setup autocomplete data sources **/
         let sources = algoliaConfig.autocomplete.sections.map(section => getAutocompleteSource(section, algolia_client));
 
-        
+
         /**
          * Setup the autocomplete search input
          * For autocomplete feature is used Algolia's autocomplete.js library
@@ -458,7 +458,7 @@ define(
                             searchClient,
                             queries: [
                                 {
-                                    indexName: data.paramName.indexName,
+                                    indexName: data.index.indexName,
                                     query,
                                     params:    data.options,
                                 },
