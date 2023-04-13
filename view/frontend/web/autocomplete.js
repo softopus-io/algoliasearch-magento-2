@@ -276,10 +276,40 @@ define(
                     }
                 };
             } else if (section.name === "suggestions") {
+                suggestionSection = true; //evil global
                 return {
                     ...section,
-                    paramName:  algolia_client.initIndex(defaultSectionIndex),
-                    options
+                    plugin: algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
+                        searchClient,
+                        indexName: algolia_client.initIndex(defaultSectionIndex).indexName,
+                        getSearchParams() {
+                            return {
+                                hitsPerPage: options.hitsPerPage
+                            }
+                        },
+                        transformSource({source}) {
+                            return {
+                                ...source,
+                                getItemUrl({item}) {
+                                    return getNavigatorUrl(algoliaConfig.resultPageUrl + `?q=${item.query}`);
+                                },
+                                templates: {
+                                    noResults({html}) {
+                                        return suggestionsHtml.getNoResultHtml({html});
+                                    },
+                                    header({html, items}) {
+                                        return suggestionsHtml.getHeaderHtml({section, html, items});
+                                    },
+                                    item({item, html}) {
+                                        return suggestionsHtml.getItemHtml({item, html})
+                                    },
+                                    footer({html, items}) {
+                                        return suggestionsHtml.getFooterHtml({section, html, items})
+                                    },
+                                },
+                            };
+                        },
+                    })
                 };
             } else {
                 /** If is not products, categories, pages or suggestions, it's additional section **/
@@ -387,40 +417,10 @@ define(
                 options = hookResult.shift();
             }
 
+            const plugins = [];
             sources.forEach(function (data) {
-                if (data.name === "suggestions") {
-                    suggestionSection = true;
-                    querySuggestionsPlugin = algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
-                        searchClient,
-                        indexName: data.paramName.indexName,
-                        getSearchParams() {
-                            return {
-                                hitsPerPage: data.hitsPerPage
-                            }
-                        },
-                        transformSource({source}) {
-                            return {
-                                ...source,
-                                getItemUrl({item}) {
-                                    return getNavigatorUrl(algoliaConfig.resultPageUrl + `?q=${item.query}`);
-                                },
-                                templates: {
-                                    noResults({html}) {
-                                        return suggestionsHtml.getNoResultHtml({html});
-                                    },
-                                    header({html, items}) {
-                                        return suggestionsHtml.getHeaderHtml({section: data, html, items});
-                                    },
-                                    item({item, html}) {
-                                        return suggestionsHtml.getItemHtml({item, html})
-                                    },
-                                    footer({html, items}) {
-                                        return suggestionsHtml.getFooterHtml({section: data, html, items})
-                                    },
-                                },
-                            };
-                        },
-                    });
+                if (data.plugin) {
+                    plugins.push(data.plugin);
                 } else if (data.name === "products") {
                     autocompleteConfig.unshift({
                         sourceId: data.name,
@@ -493,7 +493,9 @@ define(
                 }
             });
 
-            options.plugins = [querySuggestionsPlugin];
+            options.plugins = plugins;
+            console.log("getSources():", autocompleteConfig);
+            console.log("Options:", options);
             /** Bind autocomplete feature to the input */
             let algoliaAutocompleteInstance = algoliaBundle.autocomplete(options);
             algoliaAutocompleteInstance = algolia.triggerHooks('afterAutocompleteStart', algoliaAutocompleteInstance);
