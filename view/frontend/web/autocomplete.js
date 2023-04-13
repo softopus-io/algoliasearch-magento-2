@@ -16,6 +16,7 @@ define(
 
         const DEFAULT_HITS_PER_SECTION = 2;
 
+        // global state
         let suggestionSection = false;
         let algoliaFooter;
 
@@ -278,7 +279,6 @@ define(
                 return {
                     ...section,
                     paramName:  algolia_client.initIndex(defaultSectionIndex),
-                    displayKey: 'query',
                     options
                 };
             } else {
@@ -286,7 +286,6 @@ define(
                 return {
                     ...section,
                     paramName:  algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`),
-                    displayKey: 'value',
                     options,
                     templates:  {
                         noResults({html}) {
