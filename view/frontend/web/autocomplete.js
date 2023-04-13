@@ -162,12 +162,28 @@ define(
             return hit;
         };
 
+        const getNavigatorUrl = function (url) {
+            if (algoliaConfig.autocomplete.isNavigatorEnabled) {
+                return url;
+            }
+        }
+
+        /**
+         * Build pre-baked sources
+         * @param section
+         * @param algolia_client
+         * @returns array of source objects
+         */
         const getAutocompleteSource = function (section, algolia_client) {
             let options = {
                 hitsPerPage:    section.hitsPerPage || DEFAULT_HITS_PER_SECTION,
                 analyticsTags:  'autocomplete',
                 clickAnalytics: true,
                 distinct:       true
+            };
+
+            const getItemUrl = ({item}) => {
+                return getNavigatorUrl(item.url);
             };
 
             const defaultSectionIndex = `${algoliaConfig.indexName}_${section.name}`;
@@ -183,6 +199,7 @@ define(
                     ...section,
                     paramName: algolia_client.initIndex(defaultSectionIndex),
                     options,
+                    getItemUrl,
                     templates: {
                         noResults({html}) {
                             return productsHtml.getNoResultHtml({html});
@@ -240,6 +257,7 @@ define(
                     ...section,
                     paramName: algolia_client.initIndex(defaultSectionIndex),
                     options,
+                    getItemUrl,
                     templates: {
                         noResults({html}) {
                             return categoriesHtml.getNoResultHtml({html});
@@ -260,6 +278,7 @@ define(
                     ...section,
                     paramName: algolia_client.initIndex(defaultSectionIndex),
                     options,
+                    getItemUrl,
                     templates: {
                         noResults({html}) {
                             return pagesHtml.getNoResultHtml({html});
@@ -317,6 +336,7 @@ define(
                     ...section,
                     paramName:  algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`),
                     options,
+                    getItemUrl,
                     templates:  {
                         noResults({html}) {
                             return additionalHtml.getNoResultHtml({html});
@@ -334,12 +354,6 @@ define(
                 };
             }
         };
-
-        const getNavigatorUrl = function (url) {
-            if (algoliaConfig.autocomplete.isNavigatorEnabled) {
-                return url;
-            }
-        }
 
         /** Add products and categories that are required sections **/
         /** Add autocomplete menu sections **/
@@ -421,12 +435,11 @@ define(
             sources.forEach(function (data) {
                 if (data.plugin) {
                     plugins.push(data.plugin);
+
                 } else if (data.name === "products") {
                     autocompleteConfig.unshift({
                         sourceId: data.name,
-                        getItemUrl({item}) {
-                            return getNavigatorUrl(item.url);
-                        },
+                        getItemUrl: data.getItemUrl,
                         getItems({query}) {
                             return algoliaBundle.getAlgoliaResults({
                                 searchClient,
@@ -457,45 +470,43 @@ define(
                         templates: data.templates,
                     })
                 } else {
+                    const getItems = ({query}) => {
+                        return algoliaBundle.getAlgoliaResults({
+                            searchClient,
+                            queries: [
+                                {
+                                    indexName: data.paramName.indexName,
+                                    query,
+                                    params:    data.options,
+                                },
+                            ],
+                            // Stash additional data at item level
+                            transformResponse({results, hits}) {
+                                const resDetail = results[0];
+
+                                return hits.map(res => {
+                                    return res.map(hit => {
+                                        return {
+                                            ...hit,
+                                            query: resDetail.query
+                                        }
+                                    })
+                                });
+                            },
+
+                        });
+                    };
                     autocompleteConfig.push({
                         sourceId: data.name,
-                        getItemUrl({item}) {
-                            return getNavigatorUrl(item.url);
-                        },
-                        getItems({query}) {
-                            return algoliaBundle.getAlgoliaResults({
-                                searchClient,
-                                queries: [
-                                    {
-                                        indexName: data.paramName.indexName,
-                                        query,
-                                        params:    data.options,
-                                    },
-                                ],
-                                // Stash additional data at item level
-                                transformResponse({results, hits}) {
-                                    const resDetail = results[0];
-
-                                    return hits.map(res => {
-                                        return res.map(hit => {
-                                            return {
-                                                ...hit,
-                                                query: resDetail.query
-                                            }
-                                        })
-                                    });
-                                },
-
-                            });
-                        },
-                        templates: data.templates,
+                        getItemUrl: data.getItemUrl,
+                        getItems,
+                        templates: data.templates
                     })
                 }
             });
 
             options.plugins = plugins;
-            console.log("getSources():", autocompleteConfig);
-            console.log("Options:", options);
+
             /** Bind autocomplete feature to the input */
             let algoliaAutocompleteInstance = algoliaBundle.autocomplete(options);
             algoliaAutocompleteInstance = algolia.triggerHooks('afterAutocompleteStart', algoliaAutocompleteInstance);
