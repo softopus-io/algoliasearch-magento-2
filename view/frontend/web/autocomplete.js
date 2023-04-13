@@ -172,7 +172,7 @@ define(
          * Build pre-baked sources
          * @param section
          * @param algolia_client
-         * @returns array of source objects
+         * @returns object representing a single source
          */
         const getAutocompleteSource = function (section, algolia_client) {
             let options = {
@@ -186,21 +186,38 @@ define(
                 return getNavigatorUrl(item.url);
             };
 
+            const transformResponse = ({results, hits}) => {
+                const resDetail = results[0];
+
+                return hits.map(res => {
+                    return res.map(hit => {
+                        return {
+                            ...hit,
+                            query: resDetail.query
+                        }
+                    })
+                });
+            };
+
             const defaultSectionIndex = `${algoliaConfig.indexName}_${section.name}`;
+
+            // Default values for source
+            const source = {
+                ...section,
+                options,
+                getItemUrl,
+                transformResponse,
+                paramName: algolia_client.initIndex(defaultSectionIndex)
+            };
 
             if (section.name === "products") {
                 options.facets = ['categories.level0'];
                 options.numericFilters = 'visibility_search=1';
                 options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
 
-                options = algolia.triggerHooks('beforeAutocompleteProductSourceOptions', options);
-
-                return {
-                    ...section,
-                    paramName: algolia_client.initIndex(defaultSectionIndex),
-                    options,
-                    getItemUrl,
-                    templates: {
+                // Allow custom override
+                source.options = algolia.triggerHooks('beforeAutocompleteProductSourceOptions', options);
+                source.templates = {
                         noResults({html}) {
                             return productsHtml.getNoResultHtml({html});
                         },
@@ -247,18 +264,13 @@ define(
                             }
                             return productsHtml.getFooterHtml({html, ...resultDetails});
                         }
-                    }
-                };
+                    };
+                console.log("Product source:", source);
             } else if (section.name === "categories") {
                 if (section.name === "categories" && algoliaConfig.showCatsNotIncludedInNavigation === false) {
                     options.numericFilters = 'include_in_menu=1';
                 }
-                return {
-                    ...section,
-                    paramName: algolia_client.initIndex(defaultSectionIndex),
-                    options,
-                    getItemUrl,
-                    templates: {
+                source.templates = {
                         noResults({html}) {
                             return categoriesHtml.getNoResultHtml({html});
                         },
@@ -271,15 +283,10 @@ define(
                         footer({html, items}) {
                             return categoriesHtml.getFooterHtml({section, html, items});
                         }
-                    }
-                };
+                    };
+                console.log("Category source:", source);
             } else if (section.name === "pages") {
-                return {
-                    ...section,
-                    paramName: algolia_client.initIndex(defaultSectionIndex),
-                    options,
-                    getItemUrl,
-                    templates: {
+                source.templates = {
                         noResults({html}) {
                             return pagesHtml.getNoResultHtml({html});
                         },
@@ -292,13 +299,10 @@ define(
                         footer({html, items}) {
                             return pagesHtml.getFooterHtml({section, html, items});
                         }
-                    }
-                };
+                    };
             } else if (section.name === "suggestions") {
                 suggestionSection = true; //evil global
-                return {
-                    ...section,
-                    plugin: algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
+                source.plugin = algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
                         searchClient,
                         indexName: algolia_client.initIndex(defaultSectionIndex).indexName,
                         getSearchParams() {
@@ -328,16 +332,11 @@ define(
                                 },
                             };
                         },
-                    })
-                };
+                    });
             } else {
                 /** If is not products, categories, pages or suggestions, it's additional section **/
-                return {
-                    ...section,
-                    paramName:  algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`),
-                    options,
-                    getItemUrl,
-                    templates:  {
+                source.paramName = algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`);
+                source.templates = {
                         noResults({html}) {
                             return additionalHtml.getNoResultHtml({html});
                         },
@@ -350,9 +349,10 @@ define(
                         footer({html, items}) {
                             return additionalHtml.getFooterHtml({section, html, items});
                         }
-                    }
-                };
+                    };
             }
+
+            return source;
         };
 
         /** Add products and categories that are required sections **/
@@ -432,7 +432,7 @@ define(
             }
 
             const plugins = [];
-            sources.forEach(function (data) {
+            sources.forEach(data => {
                 if (data.plugin) {
                     plugins.push(data.plugin);
 
@@ -480,19 +480,7 @@ define(
                                     params:    data.options,
                                 },
                             ],
-                            // Stash additional data at item level
-                            transformResponse({results, hits}) {
-                                const resDetail = results[0];
-
-                                return hits.map(res => {
-                                    return res.map(hit => {
-                                        return {
-                                            ...hit,
-                                            query: resDetail.query
-                                        }
-                                    })
-                                });
-                            },
+                            transformResponse: data.transformResponse
 
                         });
                     };
