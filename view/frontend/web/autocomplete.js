@@ -203,7 +203,7 @@ define(
 
             // Default values for source
             const source = {
-                ...section,
+                sourceId: section.name,
                 options,
                 getItemUrl,
                 transformResponse,
@@ -468,7 +468,7 @@ define(
                         });
                     };
                     autocompleteConfig.push({
-                        sourceId: data.name,
+                        sourceId: data.sourceId,
                         getItemUrl: data.getItemUrl,
                         getItems,
                         templates: data.templates
