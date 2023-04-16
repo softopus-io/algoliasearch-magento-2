@@ -29,10 +29,8 @@ define(
          * Initialise Algolia client
          * Docs: https://www.algolia.com/doc/api-client/getting-started/instantiate-client-index/
          **/
-        const algolia_client = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
-        algolia_client.addAlgoliaAgent('Magento2 integration (' + algoliaConfig.extensionVersion + ')');
-
         const searchClient = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
+        searchClient.addAlgoliaAgent('Magento2 integration (' + algoliaConfig.extensionVersion + ')');
 
         // autocomplete code moved from common.js to autocomplete.js
         const transformAutocompleteHit = function (hit, price_key, helper) {
@@ -171,10 +169,10 @@ define(
         /**
          * Build pre-baked sources
          * @param section
-         * @param algolia_client
+         * @param searchClient
          * @returns object representing a single source
          */
-        const getAutocompleteSource = function (section, algolia_client) {
+        const buildAutocompleteSource = function (section, searchClient) {
             let options = {
                 hitsPerPage:    section.hitsPerPage || DEFAULT_HITS_PER_SECTION,
                 analyticsTags:  'autocomplete',
@@ -207,7 +205,7 @@ define(
                 options,
                 getItemUrl,
                 transformResponse,
-                index: algolia_client.initIndex(defaultSectionIndex)
+                index: searchClient.initIndex(defaultSectionIndex)
             };
 
             if (section.name === "products") {
@@ -313,14 +311,12 @@ define(
                         }
                     };
             } else if (section.name === "suggestions") {
-                suggestionSection = true; //evil global
+                suggestionSection = true; //relies on global - needs refactor
                 source.plugin = algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
                         searchClient,
-                        indexName: algolia_client.initIndex(defaultSectionIndex).indexName,
+                        indexName: searchClient.initIndex(defaultSectionIndex).indexName,
                         getSearchParams() {
-                            return {
-                                hitsPerPage: options.hitsPerPage
-                            }
+                            return options;
                         },
                         transformSource({source}) {
                             return {
@@ -347,7 +343,7 @@ define(
                     });
             } else {
                 /** If is not products, categories, pages or suggestions, it's additional section **/
-                source.index = algolia_client.initIndex(`${algoliaConfig.indexName}_section_${section.name}`);
+                source.index = searchClient.initIndex(`${algoliaConfig.indexName}_section_${section.name}`);
                 source.templates = {
                         noResults({html}) {
                             return additionalHtml.getNoResultHtml({html});
@@ -396,7 +392,7 @@ define(
         }
 
         /** Setup autocomplete data sources **/
-        let sources = algoliaConfig.autocomplete.sections.map(section => getAutocompleteSource(section, algolia_client));
+        let sources = algoliaConfig.autocomplete.sections.map(section => buildAutocompleteSource(section, searchClient));
 
 
         /**
@@ -431,7 +427,7 @@ define(
                 algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
             }
 
-            sources = algolia.triggerHooks('beforeAutocompleteSources', sources, algolia_client, algoliaBundle);
+            sources = algolia.triggerHooks('beforeAutocompleteSources', sources, searchClient, algoliaBundle);
             options = algolia.triggerHooks('beforeAutocompleteOptions', options);
 
             // Keep for backward compatibility
@@ -440,7 +436,7 @@ define(
                     'Please, replace your hook method with new hook API. ' +
                     'More information you can find on https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/');
 
-                const hookResult = algoliaHookBeforeAutocompleteStart(sources, options, algolia_client);
+                const hookResult = algoliaHookBeforeAutocompleteStart(sources, options, searchClient);
 
                 sources = hookResult.shift();
                 options = hookResult.shift();
