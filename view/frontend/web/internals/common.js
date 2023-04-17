@@ -1,21 +1,32 @@
 define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
 
     window.algolia = {
+        deprecatedHooks: [
+            'beforeAutocompleteProductSourceOptions',
+            'beforeAutocompleteOptions'
+        ],
         allowedHooks: [
-            'beforeAutocompleteSources',
+            'afterAutocompleteSources',
+            'afterAutocompletePlugins',
             'beforeAutocompleteOptions',
+            'afterAutocompleteOptions',
             'afterAutocompleteStart',
+            'beforeAutocompleteProductSourceOptions',
+            'afterAutocompleteProductSourceOptions',
             'beforeInstantsearchInit',
             'beforeWidgetInitialization',
             'beforeInstantsearchStart',
             'afterInstantsearchStart',
-            'afterInsightsBindEvents',
-            'beforeAutocompleteProductSourceOptions'
+            'afterInsightsBindEvents'
         ],
         registeredHooks: [],
         registerHook: function (hookName, callback) {
             if (this.allowedHooks.indexOf(hookName) === -1) {
                 throw 'Hook "' + hookName + '" cannot be defined. Please use one of ' + this.allowedHooks.join(', ');
+            }
+
+            if (this.deprecatedHooks.indexOf(hookName) > -1) {
+                console.warn(`Algolia Autocomplete: ${hookName} has been deprecated and may not be supported in a future release.`);
             }
 
             if (!this.registeredHooks[hookName]) {

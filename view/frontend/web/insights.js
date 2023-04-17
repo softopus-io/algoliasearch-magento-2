@@ -67,7 +67,7 @@ define(
                     return allWidgetConfiguration;
                 });
 
-                algolia.registerHook('beforeAutocompleteProductSourceOptions', function (options) {
+                algolia.registerHook('afterAutocompleteProductSourceOptions', function (options) {
                     if (algoliaConfig.ccAnalytics.enabled) {
                         options.clickAnalytics = true;
                     }
