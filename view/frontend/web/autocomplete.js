@@ -427,7 +427,7 @@ define(
                 algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
             }
 
-            sources = algolia.triggerHooks('beforeAutocompleteSources', sources, searchClient, algoliaBundle);
+            sources = algolia.triggerHooks('beforeAutocompleteSources', sources, searchClient);
             options = algolia.triggerHooks('beforeAutocompleteOptions', options);
 
             // Keep for backward compatibility
@@ -444,6 +444,10 @@ define(
 
             const plugins = [];
             sources.forEach(data => {
+                if (!data.sourceId) {
+                    console.error("Algolia Autocomplete: sourceId is required for custom sources");
+                    return;
+                }
                 // Plugins are their own deal
                 if (data.plugin) {
                     plugins.push(data.plugin);
@@ -459,16 +463,25 @@ define(
                                     params:    data.options,
                                 },
                             ],
-                            transformResponse: data.transformResponse
-
+                            // only set transformResponse if defined (necessary check for custom sources)
+                            ...(data.transformResponse && { transformResponse : data.transformResponse })
                         });
+                    };
+                    const fallbackTemplates = {
+                        noResults: () => 'No results',
+                        header: () => data.sourceId,
+                        item: ({item}) => {
+                            console.error(`Algolia Autocomplete: No template defined for source "${data.sourceId}"`);
+                            return '[ITEM TEMPLATE MISSING]';
+                        }
                     };
                     autocompleteConfig.push({
                         sourceId: data.sourceId,
-                        getItemUrl: data.getItemUrl,
                         getItems,
-                        templates: data.templates
-                    })
+                        templates: { ...fallbackTemplates, ...(data.templates || {}) },
+                        // only set getItemUrl if defined (necessary check for custom sources)
+                        ...(data.getItemUrl && { getItemUrl: data.getItemUrl })
+                    });
                 }
             });
             options.plugins = plugins;
