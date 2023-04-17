@@ -205,7 +205,7 @@ define(
                 options,
                 getItemUrl,
                 transformResponse,
-                index: searchClient.initIndex(defaultSectionIndex)
+                indexName: defaultSectionIndex
             };
 
             if (section.name === "products") {
@@ -314,7 +314,7 @@ define(
                 suggestionSection = true; //relies on global - needs refactor
                 source.plugin = algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
                         searchClient,
-                        indexName: searchClient.initIndex(defaultSectionIndex).indexName,
+                        indexName: defaultSectionIndex,
                         getSearchParams() {
                             return options;
                         },
@@ -343,7 +343,7 @@ define(
                     });
             } else {
                 /** If is not products, categories, pages or suggestions, it's additional section **/
-                source.index = searchClient.initIndex(`${algoliaConfig.indexName}_section_${section.name}`);
+                source.indexName = `${algoliaConfig.indexName}_section_${section.name}`;
                 source.templates = {
                         noResults({html}) {
                             return additionalHtml.getNoResultHtml({html});
@@ -454,8 +454,8 @@ define(
                             searchClient,
                             queries: [
                                 {
-                                    indexName: data.index.indexName,
                                     query,
+                                    indexName: data.indexName,
                                     params:    data.options,
                                 },
                             ],
