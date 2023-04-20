@@ -709,12 +709,7 @@ class ProductHelper
     {
         if (isset($defaultData[$attribute]) === false
             && $this->isAttributeEnabled($additionalAttributes, $attribute)) {
-            // Added condition for rating_summary null value
-            if($attribute == "rating_summary" && $product->getData($attribute) == null){
-                $customData[$attribute] = 0;
-            } else {
-                $customData[$attribute] = $product->getData($attribute);
-            }
+            $customData[$attribute] = $product->getData($attribute);
         }
 
         return $customData;
