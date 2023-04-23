@@ -450,41 +450,35 @@ define(
                 console.error("Algolia Autocomplete: sourceId is required for custom sources");
                 return;
             }
-            // Plugins are their own deal
-            if (data.plugin) {
-                plugins.push(data.plugin);
-            // Otherwise it's BAU
-            } else {
-                const getItems = ({query}) => {
-                    return algoliaBundle.getAlgoliaResults({
-                        searchClient,
-                        queries: [
-                            {
-                                query,
-                                indexName: data.indexName,
-                                params:    data.options,
-                            },
-                        ],
-                        // only set transformResponse if defined (necessary check for custom sources)
-                        ...(data.transformResponse && { transformResponse : data.transformResponse })
-                    });
-                };
-                const fallbackTemplates = {
-                    noResults: () => 'No results',
-                    header: () => data.sourceId,
-                    item: ({item}) => {
-                        console.error(`Algolia Autocomplete: No template defined for source "${data.sourceId}"`);
-                        return '[ITEM TEMPLATE MISSING]';
-                    }
-                };
-                autocompleteConfig.push({
-                    sourceId: data.sourceId,
-                    getItems,
-                    templates: { ...fallbackTemplates, ...(data.templates || {}) },
-                    // only set getItemUrl if defined (necessary check for custom sources)
-                    ...(data.getItemUrl && { getItemUrl: data.getItemUrl })
+            const getItems = ({query}) => {
+                return algoliaBundle.getAlgoliaResults({
+                    searchClient,
+                    queries: [
+                        {
+                            query,
+                            indexName: data.indexName,
+                            params:    data.options,
+                        },
+                    ],
+                    // only set transformResponse if defined (necessary check for custom sources)
+                    ...(data.transformResponse && { transformResponse : data.transformResponse })
                 });
-            }
+            };
+            const fallbackTemplates = {
+                noResults: () => 'No results',
+                header: () => data.sourceId,
+                item: ({item}) => {
+                    console.error(`Algolia Autocomplete: No template defined for source "${data.sourceId}"`);
+                    return '[ITEM TEMPLATE MISSING]';
+                }
+            };
+            autocompleteConfig.push({
+                sourceId: data.sourceId,
+                getItems,
+                templates: { ...fallbackTemplates, ...(data.templates || {}) },
+                // only set getItemUrl if defined (necessary check for custom sources)
+                ...(data.getItemUrl && { getItemUrl: data.getItemUrl })
+            });
         });
         options.plugins = plugins;
 
