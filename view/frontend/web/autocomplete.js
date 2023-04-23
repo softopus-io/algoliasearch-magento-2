@@ -388,6 +388,7 @@ define(
 
         /** Setup autocomplete data sources **/
         let sources = algoliaConfig.autocomplete.sections.map(section => buildAutocompleteSource(section, searchClient));
+        sources = algolia.triggerHooks('beforeAutocompleteSources', sources, searchClient); // DEPRECATED
         sources = algolia.triggerHooks('afterAutocompleteSources', sources, searchClient);
 
         let plugins = [];
@@ -432,7 +433,7 @@ define(
             algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
         }
 
-        // Keep for backward compatibility - THIS SHOULD BE REMOVED - Not compatible with Autocomplete v1
+        // Keep for backward compatibility
         if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
             console.warn('Deprecated! You are using an old API for Algolia\'s front end hooks. ' +
                 'Please, replace your hook method with new hook API. ' +

@@ -3,9 +3,10 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
     window.algolia = {
         deprecatedHooks: [
             'beforeAutocompleteProductSourceOptions',
-            'beforeAutocompleteOptions'
+            'beforeAutocompleteSources'
         ],
         allowedHooks: [
+            'beforeAutocompleteSources', // Older implementations incompatible with v1 API
             'afterAutocompleteSources',
             'afterAutocompletePlugins',
             'beforeAutocompleteOptions',
