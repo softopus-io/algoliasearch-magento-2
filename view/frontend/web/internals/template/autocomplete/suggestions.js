@@ -8,10 +8,14 @@ define([], function () {
             return html`<p>${algoliaConfig.translations.suggestions}</p>`;
         },
 
-        getItemHtml: function ({item, html}) {
+        getItemHtml: function ({item, components, html}) {
+            const itemQuery = (item._highlightResult?.query?.value)
+                ? components.Highlight({ hit: item, attribute: "query" })
+                : item.query;
+
             return html`<a class="aa-ItemLink" href="${algoliaConfig.resultPageUrl}?q=${encodeURIComponent(item.query)}"
                 data-objectId=${item.objectID} data-index=${item.__autocomplete_indexName} data-queryId=${item.__autocomplete_queryID}>
-                ${item.query}
+                ${itemQuery}
             </a>`;
         },
 
