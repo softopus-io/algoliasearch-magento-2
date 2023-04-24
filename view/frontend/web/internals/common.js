@@ -169,8 +169,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
                     default_bundle_option.push(optionsData);
                 }
                 hit._highlightResult.default_bundle_options = default_bundle_option;
-            } else {
-                hit._highlightResult.default_bundle_options = {value: ''};
             }
 
             // Add to cart parameters
