@@ -159,6 +159,20 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
                 }
             }
 
+            if (hit.default_bundle_options) {
+                var default_bundle_option = [];
+                for (const property in hit.default_bundle_options) {
+                    const optionsData = {
+                        optionId: property,
+                        selectionId : hit.default_bundle_options[property]
+                    }
+                    default_bundle_option.push(optionsData);
+                }
+                hit._highlightResult.default_bundle_options = default_bundle_option;
+            } else {
+                hit._highlightResult.default_bundle_options = {value: ''};
+            }
+
             // Add to cart parameters
             var action = algoliaConfig.instant.addToCartParams.action + 'product/' + hit.objectID + '/';
 

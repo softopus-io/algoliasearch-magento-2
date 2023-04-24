@@ -1317,6 +1317,7 @@ class ConfigHelper
             'value',
             'query', # suggestions
             'path', # categories
+            'default_bundle_options',
         ]);
         $currencies = $this->dirCurrency->getConfigAllowCurrencies();
         foreach ($currencies as $currency) {
