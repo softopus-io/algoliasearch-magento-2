@@ -158,7 +158,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
                     }
                 }
             }
-
+            /* Added code to bind default bundle options */
             if (hit.default_bundle_options) {
                 var default_bundle_option = [];
                 for (const property in hit.default_bundle_options) {
