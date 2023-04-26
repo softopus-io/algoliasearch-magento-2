@@ -12,11 +12,11 @@ Algolia Search for Magento 2
 
 ## Features
 
-The Algolia extension replaces the default search in Magento Open Source and Adobe Commerce with a robust autocomplete search menu and instant search results page. with an autocomplete search menu and an instant search results page that updates with products and categories in real time.
+The Algolia extension replaces the default search in Magento Open Source and Adobe Commerce with a robust autocomplete search menu and instant search results page.
 
 This extension replaces the default search of Magento with a typo-tolerant, fast & relevant search experience backed by Algolia. It's based on [algoliasearch-client-php](https://github.com/algolia/algoliasearch-client-php), [autocomplete.js](https://github.com/algolia/autocomplete.js) and [instantsearch.js](https://github.com/algolia/instantsearch.js).
 
-- **Autocompletion menu:** Offer End-Users immediate access to your whole catalog from the dropdown menu, whatever your number of categories or attributes.
+- **Autocompletion menu:** Provide your entire catalog to End-Users instantly via the dropdown menu, regardless of the number of categories or attributes it contains.
 
 - **Instantsearch results page:** Have your search results page, navigation and pagination updated in realtime, after each keystroke.
 
@@ -61,13 +61,14 @@ With the release of a new major version, we have decided to create minor and maj
 
 If you would like to stay on a minor version, please upgrade your composer to only accept versions less than version 2 like the example:
 
-`"algolia/algoliasearch-magento-2": ">=3.9 <3.10"`
+`"algolia/algoliasearch-magento-2": "3.10.2"`
 
 ### Customisation
 
 The extension uses libraries to help assist with the frontend implementation for autocomplete, instantsearch, and insight features. It also uses the Algolia PHP client to leverage indexing and search methods from the backend. When you approach customisations for either, you have to understand that you are customising the implementation itself and not the components it is based on.
 
 These libraries are here to help add to your customisation but because the extension has already initialised these components, you should hook into the area between the extension the libraries.
+Please check our [Custom Extension](https://github.com/algolia/algoliasearch-custom-algolia-magento-2) for refrence 
 
 ### The Extension JS Bundle
 
