@@ -1,5 +1,36 @@
 # CHANGE LOG
 
+## 3.10.2
+
+### UPDATES
+- Ensured compatibility of the extension with Magento 2.4.6
+- Updated the code to allow for convenient customization of object serialization
+- Enhanced comments for non-castable attributes in system configuration
+- Updated the code to ensure that accurate prices are indexed for bundle products when the dynamic price attribute is turned off
+- Updated autocomplete to include userToken and enablePersonalization tag in search requests
+
+
+
+### Bug Fixes
+- Fixed issue with section.label in autocomplete
+- Resolved issue with nbOfQuerySuggestions in autocomplete
+- Fixed routing error related to disabling searchBox for instant search page
+- Resolved deployment issue with prefixed Magento database tables
+- Fixed spacing issue with pagination on instant search page
+
+
+## 3.10.1
+
+### UPDATES
+- Added recommended js version in readme file.
+
+### Bug Fixes
+- Add caching on category name lookup (scoped by store) to fix slowness in indexing.
+- Prevent loss of synonyms while copying from tmp index during Indexing in Algolia Dashboard.
+- Fixed the translation issue of labels in Algolia autocomplete dropdown
+- Ensured compatibility of the extension with PHP 7.4
+- Resolved the deployment issue related to prefixing Magento database tables
+
 
 ## 3.10.0
 
