@@ -67,7 +67,7 @@ If you would like to stay on a minor version, please upgrade your composer to on
 
 The extension uses libraries to help assist with the frontend implementation for autocomplete, instantsearch, and insight features. It also uses the Algolia PHP client to leverage indexing and search methods from the backend. When you approach customisations for either, you have to understand that you are customising the implementation itself and not the components it is based on.
 
-These libraries are here to help add to your customisation but because the extension has already initialised these components, you should hooks into the area between the extension and the libraries.
+These libraries are here to help add to your customisation but because the extension has already initialised these components, you should use hooks into the area between the extension and the libraries.
 Please check our [Custom Extension](https://github.com/algolia/algoliasearch-custom-algolia-magento-2) for refrence 
 
 ### The Extension JS Bundle
