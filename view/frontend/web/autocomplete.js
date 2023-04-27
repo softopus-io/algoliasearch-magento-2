@@ -339,7 +339,7 @@ define(
                 searchClient,
                 indexName: `${algoliaConfig.indexName}_suggestions`,
                 getSearchParams() {
-                    return { hitsPerPage: algoliaConfig.autocomplete.nbOfProductsSuggestions };
+                    return { hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions };
                 },
                 transformSource({source}) {
                     return {
@@ -489,8 +489,7 @@ define(
         algoliaAutocompleteInstance = algolia.triggerHooks('afterAutocompleteStart', algoliaAutocompleteInstance);
 
         //Autocomplete insight click conversion
-        if (algoliaConfig.ccAnalytics.enabled
-            && algoliaConfig.ccAnalytics.conversionAnalyticsMode !== 'disabled') {
+        if (algoliaConfig.ccAnalytics.enabled) {
             $(document).on('click', '.algoliasearch-autocomplete-hit', function () {
                 const $this = $(this);
                 if ($this.data('clicked')) return;
@@ -498,8 +497,9 @@ define(
                 let objectId = $this.attr('data-objectId');
                 let indexName = $this.attr('data-index');
                 let queryId = $this.attr('data-queryId');
+                let position = $this.attr('data-position');
                 let eventData = algoliaInsights.buildEventData(
-                    'Clicked', objectId, indexName, 1, queryId
+                    'Clicked', objectId, indexName, position, queryId
                 );
                 algoliaInsights.trackClick(eventData);
                 $this.attr('data-clicked', true);
