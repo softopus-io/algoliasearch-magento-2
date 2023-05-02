@@ -136,6 +136,7 @@ class ProductHelper
         'rating_summary',
         'media_gallery',
         'in_stock',
+        'default_bundle_options',
     ];
 
     /**
@@ -536,7 +537,7 @@ class ProductHelper
      */
     public function getAllCategories($categoryIds, $storeId)
     {
-        $filterNotIncludedCategories = $this->configHelper->showCatsNotIncludedInNavigation($storeId);
+        $filterNotIncludedCategories = !$this->configHelper->showCatsNotIncludedInNavigation($storeId);
         $categories = $this->categoryHelper->getCoreCategories($filterNotIncludedCategories, $storeId);
 
         $selectedCategories = [];
@@ -599,6 +600,9 @@ class ProductHelper
         $customData = $this->addImageData($customData, $product, $additionalAttributes);
         $customData = $this->addInStock($defaultData, $customData, $product);
         $customData = $this->addStockQty($defaultData, $customData, $additionalAttributes, $product);
+        if ($product->getTypeId() == "bundle") {
+            $customData = $this->addBundleProductDefaultOptions($customData, $product);
+        }
         $subProducts = $this->getSubProducts($product);
         $customData = $this->addAdditionalAttributes($customData, $additionalAttributes, $product, $subProducts);
         $customData = $this->priceManager->addPriceDataByProductType($customData, $product, $subProducts);
@@ -712,6 +716,29 @@ class ProductHelper
             $customData[$attribute] = $product->getData($attribute);
         }
 
+        return $customData;
+    }
+
+    /**
+     * @param $customData
+     * @param Product $product
+     * @return mixed
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    protected function  addBundleProductDefaultOptions($customData, Product $product) {
+        $optionsCollection = $product->getTypeInstance(true)->getOptionsCollection($product);
+        $optionDetails = [];
+        foreach ($optionsCollection as $option){
+            $selections = $product->getTypeInstance(true)->getSelectionsCollection($option->getOptionId(),$product);
+            //selection details by optionids
+            foreach ($selections as $selection) {
+                if($selection->getIsDefault()){
+                    $optionDetails[$option->getOptionId()] = $selection->getSelectionId();
+                }
+            }
+        }
+        $customData['default_bundle_options'] = array_unique($optionDetails);
         return $customData;
     }
 

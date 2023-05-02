@@ -664,6 +664,15 @@ define(
                 widget = algoliaBundle.instantsearch.widgets.panel(config.panelOptions)(widget);
                 delete config.panelOptions;
             }
+            if(type === "rangeSlider" && config.attribute.indexOf("price.") < 0) {
+				config.panelOptions = {
+					hidden(options) {
+						return options.range.min === 0 && options.range.max === 0;
+					},
+				};
+				widget = algoliaBundle.instantsearch.widgets.panel(config.panelOptions)(widget);
+				delete config.panelOptions;
+			}
 
             search.addWidgets([widget(config)]);
         }
