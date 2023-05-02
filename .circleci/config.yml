@@ -16,7 +16,7 @@ shared: &shared
     - run:
         name: Start database server
         command: |
-          sudo service mysql start
+          sudo service mariadb start
           sleep 2
           ps aux | grep mysql
 
