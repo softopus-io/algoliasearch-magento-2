@@ -137,6 +137,7 @@ class ProductHelper
         'rating_summary',
         'media_gallery',
         'in_stock',
+        'default_bundle_options',
     ];
 
     /**
@@ -410,8 +411,8 @@ class ProductHelper
         $attributesForFaceting = $this->getAttributesForFaceting($storeId);
 
         $indexSettings = [
-            'searchableAttributes'    => $searchableAttributes,
-            'customRanking'           => $customRanking,
+            'searchableAttributes' => $searchableAttributes,
+            'customRanking' => $customRanking,
             'unretrievableAttributes' => $unretrievableAttributes,
             'attributesForFaceting'   => $attributesForFaceting,
             'maxValuesPerFacet'       => (int)$this->configHelper->getMaxValuesPerFacet($storeId),
@@ -543,7 +544,7 @@ class ProductHelper
      */
     public function getAllCategories($categoryIds, $storeId)
     {
-        $filterNotIncludedCategories = $this->configHelper->showCatsNotIncludedInNavigation($storeId);
+        $filterNotIncludedCategories = !$this->configHelper->showCatsNotIncludedInNavigation($storeId);
         $categories = $this->categoryHelper->getCoreCategories($filterNotIncludedCategories, $storeId);
 
         $selectedCategories = [];
@@ -606,6 +607,9 @@ class ProductHelper
         $customData = $this->addImageData($customData, $product, $additionalAttributes);
         $customData = $this->addInStock($defaultData, $customData, $product);
         $customData = $this->addStockQty($defaultData, $customData, $additionalAttributes, $product);
+        if ($product->getTypeId() == "bundle") {
+            $customData = $this->addBundleProductDefaultOptions($customData, $product);
+        }
         $subProducts = $this->getSubProducts($product);
         $customData = $this->addAdditionalAttributes($customData, $additionalAttributes, $product, $subProducts);
         $customData = $this->priceManager->addPriceDataByProductType($customData, $product, $subProducts);
@@ -727,6 +731,29 @@ class ProductHelper
             $customData[$attribute] = $product->getData($attribute);
         }
 
+        return $customData;
+    }
+
+    /**
+     * @param $customData
+     * @param Product $product
+     * @return mixed
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    protected function  addBundleProductDefaultOptions($customData, Product $product) {
+        $optionsCollection = $product->getTypeInstance(true)->getOptionsCollection($product);
+        $optionDetails = [];
+        foreach ($optionsCollection as $option){
+            $selections = $product->getTypeInstance(true)->getSelectionsCollection($option->getOptionId(),$product);
+            //selection details by optionids
+            foreach ($selections as $selection) {
+                if($selection->getIsDefault()){
+                    $optionDetails[$option->getOptionId()] = $selection->getSelectionId();
+                }
+            }
+        }
+        $customData['default_bundle_options'] = array_unique($optionDetails);
         return $customData;
     }
 
@@ -997,7 +1024,7 @@ class ProductHelper
         }
 
         if (is_array($values) && count($values) > 0) {
-            $customData[$attributeName] = array_values(array_unique($values));
+            $customData[$attributeName] = $this->getSanitizedArrayValues($values, $attributeName);
         }
 
         if (count($subProductImages) > 0) {
@@ -1008,12 +1035,27 @@ class ProductHelper
     }
 
     /**
-     * @param $valueText
-     * @param Product $subProduct
-     * @param AttributeResource $attributeResource
+     * By default Algolia will remove all redundant attribute values that are fetched from the child simple products.
+     *
+     * Overridable via Preference to allow implementer to enforce their own uniqueness rules while leveraging existing indexing code.
+     * e.g. $values = (in_array($attributeName, self::NON_UNIQUE_ATTRIBUTES)) ? $values : array_unique($values);
+     *
+     * @param array $values
+     * @param string $attributeName
      * @return array
      */
-    protected function getValues($valueText, Product $subProduct, AttributeResource $attributeResource)
+    protected function getSanitizedArrayValues(array $values, string $attributeName): array
+    {
+        return array_values(array_unique($values));
+    }
+
+    /**
+     * @param string|array $valueText - bit of a misnomer - essentially the retrieved values to be indexed for a given product's attribute
+     * @param Product $subProduct - the simple product to index
+     * @param AttributeResource $attributeResource - the attribute being indexed
+     * @return array
+     */
+    protected function getValues($valueText, Product $subProduct, AttributeResource $attributeResource): array
     {
         $values = [];
 

@@ -733,7 +733,7 @@ class Data
             $reviewTableName = $this->resource->getTableName('review_entity_summary');
             $collection
                 ->getSelect()
-                ->columns('(SELECT MAX(rating_summary) FROM ' . $reviewTableName . ' AS o WHERE o.entity_pk_value = e.entity_id AND o.store_id = ' . $storeId . ') as rating_summary');
+                ->columns('(SELECT coalesce(MAX(rating_summary), 0) FROM ' . $reviewTableName . ' AS o WHERE o.entity_pk_value = e.entity_id AND o.store_id = ' . $storeId . ') as rating_summary');
         }
 
         $this->eventManager->dispatch(
