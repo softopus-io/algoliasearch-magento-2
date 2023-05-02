@@ -497,9 +497,8 @@ define(
                 let objectId = $this.attr('data-objectId');
                 let indexName = $this.attr('data-index');
                 let queryId = $this.attr('data-queryId');
-                let position = $this.attr('data-position');
                 let eventData = algoliaInsights.buildEventData(
-                    'Clicked', objectId, indexName, position, queryId
+                    'Clicked', objectId, indexName, 1, queryId
                 );
                 algoliaInsights.trackClick(eventData);
                 $this.attr('data-clicked', true);

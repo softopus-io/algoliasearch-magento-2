@@ -10,8 +10,7 @@ define([], function () {
 
         getItemHtml: function ({item, components, html, section}) {
             return html`<a class="aa-ItemLink" href="${algoliaConfig.resultPageUrl}?q=${encodeURIComponent(item.query)}&${section.name}=${encodeURIComponent(item.value)}"
-                data-objectId=${item.objectID} data-index=${item.__autocomplete_indexName} data-queryId=${item.__autocomplete_queryID}
-                data-position=${item.__autocomplete_id + 1}>
+                data-objectId=${item.objectID} data-index=${item.__autocomplete_indexName} data-queryId=${item.__autocomplete_queryID}>
                 ${components.Highlight({ hit: item, attribute: 'value' })}
             </a>`;
 
