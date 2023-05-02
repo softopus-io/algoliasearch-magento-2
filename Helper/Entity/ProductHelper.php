@@ -21,6 +21,7 @@ use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
+use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
@@ -290,7 +291,7 @@ class ProductHelper
      * @param $productIds
      * @param $onlyVisible
      * @param $includeNotVisibleIndividually
-     * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
+     * @return Collection
      */
     public function getProductCollectionQuery(
         $storeId,
@@ -365,12 +366,18 @@ class ProductHelper
     }
 
     /**
+     * Adds key attributes like pricing and visibility to product collection query.
+     * IMPORTANT: The "Product Price" (aka `catalog_product_price`) index must be
+     *            up-to-date in order to properly build this collection.
+     *            Otherwise, the resulting inner join will filter out products
+     *            without a price. These removed products will initiate a `deleteObject`
+     *            operation against the underlying product index in Algolia.
      * @param $products
      * @return void
      */
-    protected function addMandatoryAttributes($products)
+    protected function addMandatoryAttributes(ProductCollection $products): void
     {
-        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $products */
+        /** @var ProductCollection $products */
         $products->addFinalPrice()
             ->addAttributeToSelect('special_price')
             ->addAttributeToSelect('special_from_date')
@@ -407,9 +414,9 @@ class ProductHelper
             'searchableAttributes' => $searchableAttributes,
             'customRanking' => $customRanking,
             'unretrievableAttributes' => $unretrievableAttributes,
-            'attributesForFaceting' => $attributesForFaceting,
-            'maxValuesPerFacet' => (int)$this->configHelper->getMaxValuesPerFacet($storeId),
-            'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
+            'attributesForFaceting'   => $attributesForFaceting,
+            'maxValuesPerFacet'       => (int)$this->configHelper->getMaxValuesPerFacet($storeId),
+            'removeWordsIfNoResults'  => $this->configHelper->getRemoveWordsIfNoResult($storeId),
         ];
 
         // Additional index settings from event observer
@@ -577,16 +584,16 @@ class ProductHelper
 
         $urlParams = [
             '_secure' => $this->configHelper->useSecureUrlsInFrontend($product->getStoreId()),
-            '_nosid' => true,
+            '_nosid'  => true,
         ];
 
         $customData = [
-            'objectID' => $product->getId(),
-            'name' => $product->getName(),
-            'url' => $product->getUrlModel()->getUrl($product, $urlParams),
-            'visibility_search' => (int)(in_array($visibility, $visibleInSearch)),
+            'objectID'           => $product->getId(),
+            'name'               => $product->getName(),
+            'url'                => $product->getUrlModel()->getUrl($product, $urlParams),
+            'visibility_search'  => (int)(in_array($visibility, $visibleInSearch)),
             'visibility_catalog' => (int)(in_array($visibility, $visibleInCatalog)),
-            'type_id' => $product->getTypeId(),
+            'type_id'            => $product->getTypeId(),
         ];
 
         $additionalAttributes = $this->getAdditionalAttributes($product->getStoreId());
@@ -609,7 +616,11 @@ class ProductHelper
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_subproducts_index',
-            ['custom_data' => $transport, 'sub_products' => $subProducts, 'productObject' => $product]
+            [
+                'custom_data'   => $transport,
+                'sub_products'  => $subProducts,
+                'productObject' => $product
+            ]
         );
         $customData = $transport->getData();
         $customData = array_merge($customData, $defaultData);
@@ -617,7 +628,11 @@ class ProductHelper
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_after_create_product_object',
-            ['custom_data' => $transport, 'sub_products' => $subProducts, 'productObject' => $product]
+            [
+                'custom_data'   => $transport,
+                'sub_products'  => $subProducts,
+                'productObject' => $product
+            ]
         );
         $customData = $transport->getData();
 
