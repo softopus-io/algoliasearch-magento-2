@@ -14,8 +14,7 @@ define([], function () {
                 : item.query;
 
             return html`<a class="aa-ItemLink algolia-suggestions" href="${algoliaConfig.resultPageUrl}?q=${encodeURIComponent(item.query)}"
-                data-objectId=${item.objectID} data-index=${item.__autocomplete_indexName} data-queryId=${item.__autocomplete_queryID}
-                data-position=${item.__autocomplete_id + 1}>
+                data-objectId=${item.objectID} data-index=${item.__autocomplete_indexName} data-queryId=${item.__autocomplete_queryID}>
                 <svg xmlns="http://www.w3.org/2000/svg"
                      class="algolia-glass-suggestion magnifying-glass"
                      width="24"
