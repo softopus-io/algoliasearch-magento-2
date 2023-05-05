@@ -509,11 +509,13 @@ define(
                 const $this = $(this);
                 if ($this.data('clicked')) return;
 
-                let objectId = $this.attr('data-objectId');
-                let indexName = $this.attr('data-index');
-                let queryId = $this.attr('data-queryId');
-                let eventData = algoliaInsights.buildEventData(
-                    'Clicked', objectId, indexName, 1, queryId
+                const objectId = $this.attr('data-objectId');
+                const indexName = $this.attr('data-index');
+                const queryId = $this.attr('data-queryId');
+                const position = $this.attr('data-position');
+
+                const eventData = algoliaInsights.buildEventData(
+                    'Clicked', objectId, indexName, position, queryId
                 );
                 algoliaInsights.trackClick(eventData);
                 $this.attr('data-clicked', true);
