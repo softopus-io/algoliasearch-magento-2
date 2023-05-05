@@ -188,10 +188,11 @@ define(
                 const resDetail = results[0];
 
                 return hits.map(res => {
-                    return res.map(hit => {
+                    return res.map((hit, i) => {
                         return {
                             ...hit,
-                            query: resDetail.query
+                            query: resDetail.query,
+                            position: i + 1
                         }
                     })
                 });
@@ -267,14 +268,14 @@ define(
                     };
                 source.transformResponse = ({results, hits}) => {
                     const resDetail = results[0];
-
                     return hits.map(res => {
-                        return res.map(hit => {
+                        return res.map((hit, i) => {
                             return {
                                 ...hit,
                                 nbHits:        resDetail.nbHits,
                                 allCategories: resDetail.facets['categories.level0'],
-                                query:         resDetail.query
+                                query:         resDetail.query,
+                                position:      i + 1
                             }
                         })
                     });
