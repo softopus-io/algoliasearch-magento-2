@@ -345,6 +345,20 @@ define(
                 transformSource({source}) {
                     return {
                         ...source,
+                        getItems() {
+                          const items = source.getItems();
+                          const oldTransform = items.transformResponse;
+                          items.transformResponse = arg => {
+                              const hits = oldTransform ? oldTransform(arg) : arg.hits;
+                              return hits.map((hit, i) => {
+                                  return {
+                                      ...hit,
+                                      position: i + 1
+                                  }
+                              });
+                          };
+                          return items;
+                        },
                         getItemUrl({item}) {
                             return getNavigatorUrl(algoliaConfig.resultPageUrl + `?q=${item.query}`);
                         },
