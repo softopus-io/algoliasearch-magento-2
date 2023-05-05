@@ -340,7 +340,10 @@ define(
                 searchClient,
                 indexName: `${algoliaConfig.indexName}_suggestions`,
                 getSearchParams() {
-                    return { hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions };
+                    return {
+                        hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions,
+                        clickAnalytics: true
+                    };
                 },
                 transformSource({source}) {
                     return {

@@ -13,7 +13,7 @@ define([], function () {
                 ? components.Highlight({ hit: item, attribute: "query" })
                 : item.query;
 
-            return html`<a class="aa-ItemLink algolia-suggestions"
+            return html`<a class="aa-ItemLink algolia-suggestions algoliasearch-autocomplete-hit"
                            href="${algoliaConfig.resultPageUrl}?q=${encodeURIComponent(item.query)}"
                            data-objectId="${item.objectID}"
                            data-position="${item.position}"
