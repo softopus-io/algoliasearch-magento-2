@@ -288,7 +288,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'nbOfElementsPerIndexingJob' => $config->getNumberOfElementByPage($this->getStoreId()),
             ],
             'isPreventBackendRenderingEnabled' => $config->preventBackendRendering($this->getStoreId()),
-            'areOutOfStockOptionsDisplayed' => $config->indexOutOfStockOptions($this->getStoreId()),
+            'areOutOfStockOptionsDisplayed' => $config->getShowOutOfStock($this->getStoreId()),
             'translations' => [
                 'to' => __('to'),
                 'or' => __('or'),
