@@ -27,6 +27,12 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" type="Algolia\AlgoliaSearch\Model\LandingPage" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueryInterface" type="Algolia\AlgoliaSearch\Model\Query" />
 
+    <!-- Declare preference for QueueArchiveRepositoryInterface -->
+    <preference for="Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface" type="Algolia\AlgoliaSearch\Model\QueueArchiveRepository" />
+
+    <!-- Declare implementation for QueueArchiveInterface -->
+    <preference for="Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface" type="Algolia\AlgoliaSearch\Model\QueueArchive" />
+
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">
