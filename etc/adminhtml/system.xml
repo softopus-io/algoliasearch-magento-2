@@ -447,10 +447,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="index_out_of_stock_options" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Index out of stock options for configurable products</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
             </group>
         </section>
         <section id="algoliasearch_categories" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">

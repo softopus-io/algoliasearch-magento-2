@@ -48,7 +48,6 @@ class ConfigHelper
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
-    public const INDEX_OUT_OF_STOCK_OPTIONS = 'algoliasearch_products/products/index_out_of_stock_options';
 
     public const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
     public const CATEGORY_CUSTOM_RANKING = 'algoliasearch_categories/categories/custom_ranking_category_attributes';
@@ -211,18 +210,6 @@ class ConfigHelper
         $this->groupCollection = $groupCollection;
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function indexOutOfStockOptions($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(
-            self::INDEX_OUT_OF_STOCK_OPTIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
 
     /**
      * @param $storeId
@@ -1317,6 +1304,7 @@ class ConfigHelper
             'value',
             'query', # suggestions
             'path', # categories
+            'default_bundle_options',
         ]);
         $currencies = $this->dirCurrency->getConfigAllowCurrencies();
         foreach ($currencies as $currency) {
