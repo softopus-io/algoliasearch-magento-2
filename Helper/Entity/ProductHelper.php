@@ -819,7 +819,7 @@ class ProductHelper
 
         return $categoryData;
     }
-    
+
     /**
      * @param array $algoliaData Data for product object to be serialized to Algolia index
      * @param Product $product
@@ -844,31 +844,31 @@ class ProductHelper
      */
     protected function getHierarchicalCategories($categoriesWithPath)
     {
-        $hierachicalCategories = [];
+        $hierarchicalCategories = [];
 
         $levelName = 'level';
 
         foreach ($categoriesWithPath as $category) {
             $categoryCount = count($category);
             for ($i = 0; $i < $categoryCount; $i++) {
-                if (isset($hierachicalCategories[$levelName . $i]) === false) {
-                    $hierachicalCategories[$levelName . $i] = [];
+                if (isset($hierarchicalCategories[$levelName . $i]) === false) {
+                    $hierarchicalCategories[$levelName . $i] = [];
                 }
 
                 if ($category[$i] === null) {
                     continue;
                 }
 
-                $hierachicalCategories[$levelName . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
+                $hierarchicalCategories[$levelName . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
             }
         }
 
         // dedupe in case of multi category assignment
-        foreach ($hierachicalCategories as &$level) {
+        foreach ($hierarchicalCategories as &$level) {
             $level = array_values(array_unique($level));
         }
 
-        return $hierachicalCategories;
+        return $hierarchicalCategories;
     }
 
     /**
