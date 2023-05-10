@@ -715,14 +715,47 @@ class ProductHelper
         return $customData;
     }
 
+    protected function getCategoryPaths($product, $category)
+    {
+        $category->getUrlInstance()->setStore($product->getStoreId());
+        $path = [];
+
+        foreach ($category->getPathIds() as $treeCategoryId) {
+            $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
+            if ($name) {
+                $categoryIds[] = $treeCategoryId;
+                $path[] = $name;
+            }
+        }
+    }
+
     /**
-     * @param $customData
+     * A category should only be indexed if in the path of the current store and has a valid name.
+     *
+     * @param $category
+     * @param $rootCat
+     * @param $storeId
+     * @return string|null
+     */
+    protected function getValidCategoryName($category, $rootCat, $storeId): ?string
+    {
+        $pathParts = explode('/', $category->getPath());
+        if (isset($pathParts[1]) && $pathParts[1] !== $rootCat) {
+            return null;
+        }
+
+        return $this->categoryHelper->getCategoryName($category->getId(), $storeId);
+
+    }
+
+    /**
+     * @param $algoliaObject object to be serialized to Algolia index
      * @param Product $product
      * @return mixed
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    protected function addCategoryData($customData, Product $product)
+    protected function addCategoryData($algoliaObject, Product $product)
     {
         $storeId = $product->getStoreId();
         $categories = [];
@@ -731,7 +764,7 @@ class ProductHelper
 
         $_categoryIds = $product->getCategoryIds();
 
-        if (is_array($_categoryIds) && count($_categoryIds) > 0) {
+        if (is_array($_categoryIds) && count($_categoryIds)) {
             $categoryCollection = $this->getAllCategories($_categoryIds, $storeId);
 
             /** @var Store $store */
@@ -739,40 +772,28 @@ class ProductHelper
             $rootCat = $store->getRootCategoryId();
 
             foreach ($categoryCollection as $category) {
-                // Check and skip all categories that is not
-                // in the path of the current store.
-                $path = $category->getPath();
-                $pathParts = explode('/', $path);
-                if (isset($pathParts[1]) && $pathParts[1] !== $rootCat) {
+                $categoryName = $this->getValidCategoryName($category, $rootCat, $storeId);
+                if (!$categoryName) {
                     continue;
                 }
+                $categories[] = $categoryName;
 
-                $categoryName = $this->categoryHelper->getCategoryName($category->getId(), $storeId);
-                if ($categoryName) {
-                    $categories[] = $categoryName;
-                }
-
-                $category->getUrlInstance()->setStore($product->getStoreId());
-                $path = [];
+                $category->getUrlInstance()->setStore($storeId);
+                $paths = [];
 
                 foreach ($category->getPathIds() as $treeCategoryId) {
                     $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
                     if ($name) {
                         $categoryIds[] = $treeCategoryId;
-                        $path[] = $name;
+                        $paths[] = $name;
                     }
                 }
 
-                $categoriesWithPath[] = $path;
+                $categoriesWithPath[] = $paths;
             }
         }
 
-        foreach ($categoriesWithPath as $result) {
-            for ($i = count($result) - 1; $i > 0; $i--) {
-                $categoriesWithPath[] = array_slice($result, 0, $i);
-            }
-        }
-
+        // Filter out non unique category path entries - is this a likely scenario?
         $categoriesWithPath = array_intersect_key(
             $categoriesWithPath,
             array_unique(array_map('serialize', $categoriesWithPath))
@@ -780,11 +801,11 @@ class ProductHelper
 
         $hierarchicalCategories = $this->getHierarchicalCategories($categoriesWithPath);
 
-        $customData['categories'] = $hierarchicalCategories;
-        $customData['categories_without_path'] = $categories;
-        $customData['categoryIds'] = array_values(array_unique($categoryIds));
+        $algoliaObject['categories'] = $hierarchicalCategories;
+        $algoliaObject['categories_without_path'] = $categories;
+        $algoliaObject['categoryIds'] = array_values(array_unique($categoryIds));
 
-        return $customData;
+        return $algoliaObject;
     }
 
     /**
