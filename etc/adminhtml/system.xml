@@ -451,6 +451,18 @@
                     <label>Index out of stock options for configurable products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="enable_visual_merchandising" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable visual merchandising support</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If enabled, products will be indexed into Algolia with a compatible category data format that supports advanced merchandising features
+                            such as visual rules and the new Merchandising Studio.
+                            <br><br>
+                            NOTE: Merchandising Studio is only available on Premium plans.
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_categories" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">

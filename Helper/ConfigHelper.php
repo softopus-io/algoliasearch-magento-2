@@ -49,6 +49,7 @@ class ConfigHelper
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
     public const INDEX_OUT_OF_STOCK_OPTIONS = 'algoliasearch_products/products/index_out_of_stock_options';
+    public const ENABLE_VISUAL_MERCHANDISING = 'algoliasearch_products/products/enable_visual_merchandising';
 
     public const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
     public const CATEGORY_CUSTOM_RANKING = 'algoliasearch_categories/categories/custom_ranking_category_attributes';
@@ -873,6 +874,15 @@ class ConfigHelper
     public function useAdaptiveImage($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::USE_ADAPTIVE_IMAGE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isVisualMerchEnabled($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::ENABLE_VISUAL_MERCHANDISING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
