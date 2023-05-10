@@ -749,18 +749,38 @@ class ProductHelper
     }
 
     /**
-     * @param $algoliaObject object to be serialized to Algolia index
+     * Filter out non unique category path entries.
+     *
+     * @param $paths
+     * @return array
+     */
+    protected function dedupePaths($paths): array
+    {
+        return array_intersect_key(
+            $paths,
+            array_unique(array_map('serialize', $paths))
+        );
+    }
+
+    /**
+     * For a given product extract category data including category names, parent paths and all category tree IDs
+     *
      * @param Product $product
-     * @return mixed
+     * @return array|array[]
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    protected function addCategoryData($algoliaObject, Product $product)
+    protected function buildCategoryData(Product $product): array
     {
+        // Build within a single loop
+        // TODO: Profile for efficiency vs separate loops
+        $categoryData = [
+            'categoryNames'      => [],
+            'categoryIds'        => [],
+            'categoriesWithPath' => [],
+        ];
+
         $storeId = $product->getStoreId();
-        $categories = [];
-        $categoriesWithPath = [];
-        $categoryIds = [];
 
         $_categoryIds = $product->getCategoryIds();
 
@@ -776,7 +796,7 @@ class ProductHelper
                 if (!$categoryName) {
                     continue;
                 }
-                $categories[] = $categoryName;
+                $categoryData['categoryNames'][] = $categoryName;
 
                 $category->getUrlInstance()->setStore($storeId);
                 $paths = [];
@@ -784,28 +804,38 @@ class ProductHelper
                 foreach ($category->getPathIds() as $treeCategoryId) {
                     $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
                     if ($name) {
-                        $categoryIds[] = $treeCategoryId;
+                        $categoryData['categoryIds'][] = $treeCategoryId;
                         $paths[] = $name;
                     }
                 }
 
-                $categoriesWithPath[] = $paths;
+                $categoryData['categoriesWithPath'][] = $paths;
             }
         }
 
-        // Filter out non unique category path entries - is this a likely scenario?
-        $categoriesWithPath = array_intersect_key(
-            $categoriesWithPath,
-            array_unique(array_map('serialize', $categoriesWithPath))
-        );
+        // TODO: Evaluate use cases
+        // Based on old extraneous array manip logic (since removed) - is this still a likely scenario?
+        $categoryData['categoriesWithPath'] = $this->dedupePaths($categoryData['categoriesWithPath']);
 
-        $hierarchicalCategories = $this->getHierarchicalCategories($categoriesWithPath);
+        return $categoryData;
+    }
+    
+    /**
+     * @param array $algoliaData Data for product object to be serialized to Algolia index
+     * @param Product $product
+     * @return mixed
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    protected function addCategoryData(array $algoliaData, Product $product): array
+    {
+        $categoryData = $this->buildCategoryData($product);
+        $hierarchicalCategories = $this->getHierarchicalCategories($categoryData['categoriesWithPath']);
+        $algoliaData['categories'] = $hierarchicalCategories;
+        $algoliaData['categories_without_path'] = $categoryData['categoryNames'];
+        $algoliaData['categoryIds'] = array_values(array_unique($categoryData['categoryIds']));
 
-        $algoliaObject['categories'] = $hierarchicalCategories;
-        $algoliaObject['categories_without_path'] = $categories;
-        $algoliaObject['categoryIds'] = array_values(array_unique($categoryIds));
-
-        return $algoliaObject;
+        return $algoliaData;
     }
 
     /**
@@ -833,6 +863,7 @@ class ProductHelper
             }
         }
 
+        // dedupe in case of multi category assignment
         foreach ($hierachicalCategories as &$level) {
             $level = array_values(array_unique($level));
         }
