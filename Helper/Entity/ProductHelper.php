@@ -793,30 +793,30 @@ class ProductHelper
      */
     protected function getHierarchicalCategories($categoriesWithPath)
     {
-        $hierachivalCategories = [];
+        $hierachicalCategories = [];
 
         $levelName = 'level';
 
         foreach ($categoriesWithPath as $category) {
             $categoryCount = count($category);
             for ($i = 0; $i < $categoryCount; $i++) {
-                if (isset($hierachivalCategories[$levelName . $i]) === false) {
-                    $hierachivalCategories[$levelName . $i] = [];
+                if (isset($hierachicalCategories[$levelName . $i]) === false) {
+                    $hierachicalCategories[$levelName . $i] = [];
                 }
 
                 if ($category[$i] === null) {
                     continue;
                 }
 
-                $hierachivalCategories[$levelName . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
+                $hierachicalCategories[$levelName . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
             }
         }
 
-        foreach ($hierachivalCategories as &$level) {
+        foreach ($hierachicalCategories as &$level) {
             $level = array_values(array_unique($level));
         }
 
-        return $hierachivalCategories;
+        return $hierachicalCategories;
     }
 
     /**
