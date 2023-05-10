@@ -35,6 +35,8 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class ProductHelper
 {
+    public const CATEGORY_SEPARATOR = ' /// ';
+
     /**
      * @var CollectionFactory
      */
@@ -821,6 +823,20 @@ class ProductHelper
     }
 
     /**
+     * Flatten non hierarchical paths for merchandising
+     * 
+     * @param array $paths
+     * @return array
+     */
+    protected function flattenCategoryPaths(array $paths): array
+    {
+        return array_map(
+            function ($path) { return implode(self::CATEGORY_SEPARATOR, $path); },
+            $paths
+        );
+    }
+
+    /**
      * @param array $algoliaData Data for product object to be serialized to Algolia index
      * @param Product $product
      * @return mixed
@@ -835,6 +851,10 @@ class ProductHelper
         $algoliaData['categories_without_path'] = $categoryData['categoryNames'];
         $algoliaData['categoryIds'] = array_values(array_unique($categoryData['categoryIds']));
 
+        if ($this->configHelper->isVisualMerchEnabled()) {
+            $algoliaData['categories_with_path'] = $this->flattenCategoryPaths($categoryData['categoriesWithPath']);
+        }
+
         return $algoliaData;
     }
 
@@ -842,7 +862,7 @@ class ProductHelper
      * @param $categoriesWithPath
      * @return array
      */
-    protected function getHierarchicalCategories($categoriesWithPath)
+    protected function getHierarchicalCategories($categoriesWithPath): array
     {
         $hierarchicalCategories = [];
 
@@ -859,7 +879,7 @@ class ProductHelper
                     continue;
                 }
 
-                $hierarchicalCategories[$levelName . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
+                $hierarchicalCategories[$levelName . $i][] = implode(self::CATEGORY_SEPARATOR, array_slice($category, 0, $i + 1));
             }
         }
 
