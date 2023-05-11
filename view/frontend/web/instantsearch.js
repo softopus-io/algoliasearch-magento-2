@@ -271,7 +271,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 						item.label = attribute.label;
 						item.refinements.forEach(function (refinement) {
 							if (refinement.type !== 'hierarchical') return refinement;
-							var levels = refinement.label.split('///');
+							var levels = refinement.label.split(algoliaConfig.instant.categorySeparator);
 							var lastLevel = levels[levels.length - 1];
 							refinement.label = lastLevel;
 						});
@@ -430,7 +430,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 				var hierarchicalMenuParams = {
 					container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
 					attributes: hierarchical_levels,
-					separator: ' /// ',
+					separator: algoliaConfig.instant.categorySeparator,
 					templates: templates,
 					alwaysGetRootLevel: false,
 					showParentLevel:false,

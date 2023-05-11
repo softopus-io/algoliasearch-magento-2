@@ -56,6 +56,7 @@ class ConfigHelper
     public const CATEGORY_CUSTOM_RANKING = 'algoliasearch_categories/categories/custom_ranking_category_attributes';
     public const SHOW_CATS_NOT_INCLUDED_IN_NAV = 'algoliasearch_categories/categories/show_cats_not_included_in_navigation';
     public const INDEX_EMPTY_CATEGORIES = 'algoliasearch_categories/categories/index_empty_categories';
+    public const CATEGORY_SEPARATOR = 'algoliasearch_categories/categories/category_separator';
 
     public const IS_ACTIVE = 'algoliasearch_queue/queue/active';
     public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
@@ -1461,6 +1462,15 @@ class ConfigHelper
             return $attributes;
         }
         return [];
+    }
+
+    /**
+     * @param $storeId
+     * @return string
+     */
+    public function getCategorySeparator($storeId = null): string
+    {
+        return (string) $this->configInterface->getValue(self::CATEGORY_SEPARATOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

@@ -35,8 +35,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class ProductHelper
 {
-    public const CATEGORY_SEPARATOR = ' /// ';
-
     /**
      * @var CollectionFactory
      */
@@ -828,10 +826,10 @@ class ProductHelper
      * @param array $paths
      * @return array
      */
-    protected function flattenCategoryPaths(array $paths): array
+    protected function flattenCategoryPaths(array $paths, int $storeId): array
     {
         return array_map(
-            function ($path) { return implode(self::CATEGORY_SEPARATOR, $path); },
+            function ($path) use ($storeId) { return implode($this->configHelper->getCategorySeparator($storeId), $path); },
             $paths
         );
     }
@@ -845,24 +843,27 @@ class ProductHelper
      */
     protected function addCategoryData(array $algoliaData, Product $product): array
     {
+        $storeId = $product->getStoreId();
+
         $categoryData = $this->buildCategoryData($product);
-        $hierarchicalCategories = $this->getHierarchicalCategories($categoryData['categoriesWithPath']);
+        $hierarchicalCategories = $this->getHierarchicalCategories($categoryData['categoriesWithPath'], $storeId);
         $algoliaData['categories'] = $hierarchicalCategories;
         $algoliaData['categories_without_path'] = $categoryData['categoryNames'];
         $algoliaData['categoryIds'] = array_values(array_unique($categoryData['categoryIds']));
 
-        if ($this->configHelper->isVisualMerchEnabled($product->getStoreId())) {
-            $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($product->getStoreId())] = $this->flattenCategoryPaths($categoryData['categoriesWithPath']);
+        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
+            $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($categoryData['categoriesWithPath'], $storeId);
         }
 
         return $algoliaData;
     }
 
     /**
-     * @param $categoriesWithPath
+     * @param array $categoriesWithPath
+     * @param int $storeId
      * @return array
      */
-    protected function getHierarchicalCategories($categoriesWithPath): array
+    protected function getHierarchicalCategories(array $categoriesWithPath, int $storeId): array
     {
         $hierarchicalCategories = [];
 
@@ -879,7 +880,7 @@ class ProductHelper
                     continue;
                 }
 
-                $hierarchicalCategories[$levelName . $i][] = implode(self::CATEGORY_SEPARATOR, array_slice($category, 0, $i + 1));
+                $hierarchicalCategories[$levelName . $i][] = implode($this->configHelper->getCategorySeparator($storeId), array_slice($category, 0, $i + 1));
             }
         }
 

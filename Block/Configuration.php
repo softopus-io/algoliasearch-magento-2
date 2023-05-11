@@ -94,8 +94,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 $level = -1;
                 foreach ($category->getPathIds() as $treeCategoryId) {
                     if ($path !== '') {
-                        $path .= ' /// ';
-                    }else{
+                        $path .= $config->getCategorySeparator();
+                    } else {
                         $parentCategoryName = $categoryHelper->getCategoryName($treeCategoryId, $this->getStoreId());
                     }
 
@@ -154,6 +154,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'infiniteScrollEnabled' => $config->isInfiniteScrollEnabled(),
                 'urlTrackedParameters' => $this->getUrlTrackedParameters(),
                 'isSearchBoxEnabled' => $config->isInstantSearchBoxEnabled(),
+                'categorySeparator' => $config->getCategorySeparator()
             ],
             'autocomplete' => [
                 'enabled' => $config->isAutoCompleteEnabled(),

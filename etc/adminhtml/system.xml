@@ -531,6 +531,19 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="category_separator" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Category separator</label>
+                    <validate>required-entry</validate>
+                    <comment>
+                        <![CDATA[
+                            The separator is used when serializing category data to your Algolia index and is used to build hierarchical facets and for visual merchandising rules.
+                            You should use a separator that is unlikely to occur within your category data. <strong>Spaces matter!</strong> Default is " /// ".
+
+                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Products indexer after you've modified this value.
+
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_recommend" translate="label" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -34,6 +34,7 @@
             <categories>
                 <category_additional_attributes><![CDATA[{"_1582212881657_657":{"attribute":"name","searchable":"1","order":"unordered","retrievable":"1"},"_1582212904351_351":{"attribute":"path","searchable":"1","order":"unordered","retrievable":"1"},"_1582212910660_660":{"attribute":"meta_title","searchable":"1","order":"unordered","retrievable":"1"},"_1582212915890_890":{"attribute":"meta_keywords","searchable":"1","order":"unordered","retrievable":"1"},"_1582212922533_533":{"attribute":"meta_description","searchable":"1","order":"unordered","retrievable":"1"},"_1582212927307_307":{"attribute":"product_count","searchable":"2","order":"unordered","retrievable":"1"}}]]></category_additional_attributes>
                 <custom_ranking_category_attributes><![CDATA[{"_1600352142072_72":{"attribute":"product_count","order":"desc"}}]]></custom_ranking_category_attributes>
+                <category_separator> /// </category_separator>
             </categories>
         </algoliasearch_categories>
         <algoliasearch_personalization>
