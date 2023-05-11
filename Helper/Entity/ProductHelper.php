@@ -36,7 +36,6 @@ use Magento\Store\Model\StoreManagerInterface;
 class ProductHelper
 {
     public const CATEGORY_SEPARATOR = ' /// ';
-    public const CATEGORY_PAGE_ID_ATTRIBUTE = 'categoryPageId';
 
     /**
      * @var CollectionFactory
@@ -852,8 +851,8 @@ class ProductHelper
         $algoliaData['categories_without_path'] = $categoryData['categoryNames'];
         $algoliaData['categoryIds'] = array_values(array_unique($categoryData['categoryIds']));
 
-        if ($this->configHelper->isVisualMerchEnabled()) {
-            $algoliaData[self::CATEGORY_PAGE_ID_ATTRIBUTE] = $this->flattenCategoryPaths($categoryData['categoriesWithPath']);
+        if ($this->configHelper->isVisualMerchEnabled($product->getStoreId())) {
+            $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($product->getStoreId())] = $this->flattenCategoryPaths($categoryData['categoriesWithPath']);
         }
 
         return $algoliaData;
@@ -1286,7 +1285,7 @@ class ProductHelper
         $attributesForFaceting[] = 'categoryIds';
 
         if ($this->configHelper->isVisualMerchEnabled($storeId)) {
-            $attributesForFaceting[] = 'searchable(' . self::CATEGORY_PAGE_ID_ATTRIBUTE . ')';
+            $attributesForFaceting[] = 'searchable(' . $this->configHelper->getCategoryPageIdAttributeName($storeId) . ')';
         }
 
         return $attributesForFaceting;

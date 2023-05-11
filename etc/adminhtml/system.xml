@@ -326,7 +326,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Virtual Replica is only available on Premium plans <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a> 
+                            Virtual Replica is only available on Premium plans <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a>
                         ]]>
                     </comment>
                     <depends>
@@ -459,9 +459,22 @@
                             If enabled, products will be indexed into Algolia with a compatible category data format that supports advanced merchandising features
                             such as visual rules and the new Merchandising Studio.
                             <br><br>
-                            NOTE: Merchandising Studio is only available on Premium plans.
+                            <strong>NOTE:</strong> After enabling, you must run a full product reindex to ensure that the attribute data is properly applied to your storefront catalog.
+                            Merchandising Studio is only available on Premium plans.
                         ]]>
                     </comment>
+                </field>
+                <field id="category_page_id_attribute_name" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Category page ID attribute</label>
+                    <comment>
+                        <![CDATA[
+                            Specify the name of the attribute that will contain your <a href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/#configure-the-visual-editor-for-category-merchandising" target="_blank">category page ID</a>. Default is <code>categoryPageId</code>.
+                        ]]>
+                    </comment>
+                    <validate>required-entry validate-data</validate>
+                    <depends>
+                        <field id="enable_visual_merchandising">1</field>
+                    </depends>
                 </field>
             </group>
         </section>
