@@ -21,7 +21,7 @@ define(
         let algoliaFooter;
 
         /** We have nothing to do here if autocomplete is disabled **/
-        if (!algoliaConfig.autocomplete.enabled) {
+        if (typeof algoliaConfig === 'undefined' || !algoliaConfig.autocomplete.enabled) {
             return;
         }
 
