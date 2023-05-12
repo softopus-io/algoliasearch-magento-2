@@ -749,13 +749,7 @@
                     <label>Enable Indexing Queue</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
-                        <![CDATA[
-                            If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br>
-                            <br>
-                            To schedule the run you need to add this in your crontab:<br>
-                            <code>*/5 * * * * php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code>
-                            <br><span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
-                        ]]>
+                        <model>Algolia\AlgoliaSearch\Model\Config\Link</model>
                     </comment>
                 </field>
                 <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -1168,6 +1162,7 @@
                         <![CDATA[
                             Useful for debugging. Algolia archives failed jobs by default. Enable this setting to archive all jobs that are processed by the indexing queue and to obtain and preserve the stack trace for jobs created.
                         ]]>
+                        <model>Algolia\AlgoliaSearch\Model\Config\Comment</model>
                     </comment>
                     <depends>
                         <field id="active">1</field>

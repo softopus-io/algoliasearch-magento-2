@@ -126,4 +126,18 @@
     <type name="Magento\Quote\Model\Quote\Item\ToOrderItem">
         <plugin name="algoliasearch_query_quote_item_conversion" type="Algolia\AlgoliaSearch\Plugin\QuoteItem"/>
     </type>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="algolia_algoliasearch_queuearchive_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">algoliasearch_queue_archive</argument>
+            <argument name="resourceModel" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive</argument>
+        </arguments>
+    </virtualType>
 </config>

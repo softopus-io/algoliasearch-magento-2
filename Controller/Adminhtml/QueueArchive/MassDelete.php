@@ -1,91 +1,66 @@
 <?php
-namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queuearchive;
+namespace Algolia\AlgoliaSearch\Controller\Adminhtml\QueueArchive;
 
 use Magento\Backend\App\Action;
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\Controller\ResultFactory;
 use Magento\Ui\Component\MassAction\Filter;
-use Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\CollectionFactory;
-use Algolia\AlgoliaSearch\Model\QueueArchive;
 
-class MassDelete extends Action
+class MassDelete extends \Magento\Backend\App\Action
 {
     /**
-     * @var CollectionFactory
+     * @var Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface
      */
-    protected $collectionFactory;
+    protected $_queueArchiveRepository;
+
     /**
      * @var Filter
      */
     protected $filter;
 
     /**
-     * @var QueueArchive
+     * @var Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\ColectionFactory
      */
-    protected $queueArchive;
+    protected $_collectionFactory;
 
     /**
-     * @param Context $context
-     * @param Filter $filter
-     * @param CollectionFactory $collectionFactory
-     * @param QueueArchive $queueArchive
+     * @param Action\Context                                                            $context
+     * @param Filter                                                                    $filter
+     * @param Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface                 $queueArchiveRepository
+     * @param Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\CollectionFactory   $collectionFactory
      */
     public function __construct(
-        Context $context,
+        Action\Context $context,
         Filter $filter,
-        CollectionFactory $collectionFactory,
-        QueueArchive $queueArchive
+        \Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface $queueArchiveRepository,
+        \Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\CollectionFactory $collectionFactory
     ) {
-        $this->filter = $filter;
-        $this->collectionFactory = $collectionFactory;
-        $this->queueArchive = $queueArchive;
+        $this->_queueArchiveRepository = $queueArchiveRepository;
+        $this->_filter = $filter;
+        $this->_collectionFactory = $collectionFactory;
         parent::__construct($context);
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * Delete Action
+     * @return \Magento\Framework\Controller\ResultInterface
      */
     public function execute()
     {
-        $jobData = $this->collectionFactory->create();
-
-        foreach ($jobData as $value){
-            $templateId[] = $value['id'];
+        $resultRedirect = $this->resultRedirectFactory->create();
+        $dataDeleted = 0;
+        $collection = $this->_filter->getCollection($this->_collectionFactory->create());
+        try {
+            foreach ($collection as $item) {
+                $this->_queueArchiveRepository->deleteById($item->getArchiveId());
+                $dataDeleted++;
+            }
+            $this->messageManager->addSuccess(__('A total of %1 record(s) have been deleted.', $dataDeleted));
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->messageManager->addError($e->getMessage());
+        } catch (\RuntimeException $e) {
+            $this->messageManager->addError($e->getMessage());
+        } catch (\Exception $e) {
+            $this->messageManager->addException($e, __('Something went wrong'));
         }
-            $parameterData = $this->getRequest()->getParams('id');
-            $selectedAppsid = $this->getRequest()->getParams('id');
-
-            if(array_key_exists("selected", $parameterData)){
-                $selectedAppsid = $parameterData['selected'];
-            }
-            if(array_key_exists("excluded", $parameterData)) {
-                if ($parameterData['excluded'] == 'false') {
-                    $selectedAppsid = $templateId;
-                } else {
-                    $selectedAppsid = array_diff($templateId, $parameterData['excluded']);
-                }
-            }
-            $collection = $this->collectionFactory->create();
-            $collection->addFieldToFilter('archive_id', ['in' => $selectedAppsid]);
-            $delete = 0;
-            $model = [];
-            foreach ($collection as $item){
-                $this->deleteById($item->getId());
-                $delete++;
-            }
-            $this->messageManager->addSuccess(__('A total of %1 records have been deleted.', $delete));
-            $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
-            return $resultRedirect->setPath('*/*/');
+        return $resultRedirect->setPath('*/*/');
     }
-
-    /**
-     * [deleteById description]
-     * $param [type] $id [description]
-     * $return [type]    [description]
-     */
-    public function deleteById($id){
-        $item = $this->queueArchive->load($id);
-        $item->delete();
-        return;
-    }
-}
+}   
