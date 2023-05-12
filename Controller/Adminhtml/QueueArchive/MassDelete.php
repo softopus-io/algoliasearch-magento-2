@@ -1,15 +1,21 @@
 <?php
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\QueueArchive;
 
+use Exception;
 use Magento\Backend\App\Action;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Ui\Component\MassAction\Filter;
+use Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface;
+use Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\CollectionFactory;
+use Magento\Framework\Controller\ResultInterface;
+use RuntimeException;
 
-class MassDelete extends \Magento\Backend\App\Action
+class MassDelete extends Action
 {
     /**
-     * @var Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface
+     * @var QueueArchiveRepositoryInterface
      */
-    protected $_queueArchiveRepository;
+    protected $queueArchiveRepository;
 
     /**
      * @var Filter
@@ -17,50 +23,49 @@ class MassDelete extends \Magento\Backend\App\Action
     protected $filter;
 
     /**
-     * @var Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\ColectionFactory
+     * @var ColectionFactory
      */
-    protected $_collectionFactory;
+    protected $collectionFactory;
 
     /**
-     * @param Action\Context                                                            $context
-     * @param Filter                                                                    $filter
-     * @param Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface                 $queueArchiveRepository
-     * @param Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\CollectionFactory   $collectionFactory
+     * @param Action\Context $context
+     * @param Filter $filter
+     * @param QueueArchiveRepositoryInterface $queueArchiveRepository
+     * @param CollectionFactory $collectionFactory
      */
     public function __construct(
         Action\Context $context,
         Filter $filter,
-        \Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface $queueArchiveRepository,
-        \Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\CollectionFactory $collectionFactory
+        QueueArchiveRepositoryInterface $queueArchiveRepository,
+        CollectionFactory $collectionFactory
     ) {
-        $this->_queueArchiveRepository = $queueArchiveRepository;
-        $this->_filter = $filter;
-        $this->_collectionFactory = $collectionFactory;
+        $this->queueArchiveRepository = $queueArchiveRepository;
+        $this->filter = $filter;
+        $this->collectionFactory = $collectionFactory;
         parent::__construct($context);
     }
 
     /**
      * Delete Action
-     * @return \Magento\Framework\Controller\ResultInterface
+     * @return ResultInterface
+     * @throws LocalizedException
      */
     public function execute()
     {
         $resultRedirect = $this->resultRedirectFactory->create();
         $dataDeleted = 0;
-        $collection = $this->_filter->getCollection($this->_collectionFactory->create());
+        $collection = $this->filter->getCollection($this->collectionFactory->create());
         try {
             foreach ($collection as $item) {
-                $this->_queueArchiveRepository->deleteById($item->getArchiveId());
+                $this->queueArchiveRepository->deleteById($item->getArchiveId());
                 $dataDeleted++;
             }
             $this->messageManager->addSuccess(__('A total of %1 record(s) have been deleted.', $dataDeleted));
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException|RuntimeException $e) {
             $this->messageManager->addError($e->getMessage());
-        } catch (\RuntimeException $e) {
-            $this->messageManager->addError($e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addException($e, __('Something went wrong'));
         }
         return $resultRedirect->setPath('*/*/');
     }
-}   
+}
