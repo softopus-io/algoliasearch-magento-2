@@ -188,10 +188,11 @@ define(
                 const resDetail = results[0];
 
                 return hits.map(res => {
-                    return res.map(hit => {
+                    return res.map((hit, i) => {
                         return {
                             ...hit,
-                            query: resDetail.query
+                            query: resDetail.query,
+                            position: i + 1
                         }
                     })
                 });
@@ -267,14 +268,14 @@ define(
                     };
                 source.transformResponse = ({results, hits}) => {
                     const resDetail = results[0];
-
                     return hits.map(res => {
-                        return res.map(hit => {
+                        return res.map((hit, i) => {
                             return {
                                 ...hit,
                                 nbHits:        resDetail.nbHits,
                                 allCategories: resDetail.facets['categories.level0'],
-                                query:         resDetail.query
+                                query:         resDetail.query,
+                                position:      i + 1
                             }
                         })
                     });
@@ -339,11 +340,28 @@ define(
                 searchClient,
                 indexName: `${algoliaConfig.indexName}_suggestions`,
                 getSearchParams() {
-                    return { hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions };
+                    return {
+                        hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions,
+                        clickAnalytics: true
+                    };
                 },
                 transformSource({source}) {
                     return {
                         ...source,
+                        getItems() {
+                          const items = source.getItems();
+                          const oldTransform = items.transformResponse;
+                          items.transformResponse = arg => {
+                              const hits = oldTransform ? oldTransform(arg) : arg.hits;
+                              return hits.map((hit, i) => {
+                                  return {
+                                      ...hit,
+                                      position: i + 1
+                                  }
+                              });
+                          };
+                          return items;
+                        },
                         getItemUrl({item}) {
                             return getNavigatorUrl(algoliaConfig.resultPageUrl + `?q=${item.query}`);
                         },
@@ -494,11 +512,13 @@ define(
                 const $this = $(this);
                 if ($this.data('clicked')) return;
 
-                let objectId = $this.attr('data-objectId');
-                let indexName = $this.attr('data-index');
-                let queryId = $this.attr('data-queryId');
-                let eventData = algoliaInsights.buildEventData(
-                    'Clicked', objectId, indexName, 1, queryId
+                const objectId = $this.attr('data-objectId');
+                const indexName = $this.attr('data-index');
+                const queryId = $this.attr('data-queryId');
+                const position = $this.attr('data-position');
+
+                const eventData = algoliaInsights.buildEventData(
+                    'Clicked', objectId, indexName, position, queryId
                 );
                 algoliaInsights.trackClick(eventData);
                 $this.attr('data-clicked', true);
