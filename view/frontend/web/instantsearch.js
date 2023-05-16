@@ -9,7 +9,7 @@ define(
     function (algoliaBundle, priceUtils) {
         algoliaBundle.$(function ($) {
             /** We have nothing to do here if instantsearch is not enabled **/
-            if (!algoliaConfig.instant.enabled || !(algoliaConfig.isSearchPage || !algoliaConfig.autocomplete.enabled)) {
+            if (typeof algoliaConfig === 'undefined' || !algoliaConfig.instant.enabled || !(algoliaConfig.isSearchPage || !algoliaConfig.autocomplete.enabled)) {
                 return;
             }
 
