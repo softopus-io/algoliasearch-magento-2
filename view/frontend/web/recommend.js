@@ -7,6 +7,10 @@ define([
 ],function (algoliaBundle, recommend, recommendJs, recommendProductsHtml) {
     'use strict';
 
+    if (typeof algoliaConfig === 'undefined') {
+        return;
+    }
+    
     return function (config, element) {
         algoliaBundle.$(function ($) {
             this.defaultIndexName = algoliaConfig.indexName + '_products';

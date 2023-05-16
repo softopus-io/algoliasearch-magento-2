@@ -574,6 +574,9 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
 
 
     $(function ($) {
+        if (typeof algoliaConfig === 'undefined') {
+            return;
+        }
         $(algoliaConfig.autocomplete.selector).each(function () {
             $(this).closest('form').on('submit', function (e) {
                 let query = $(this).find(algoliaConfig.autocomplete.selector).val();
