@@ -150,7 +150,8 @@ define(
                                 var eventData = self.buildEventData(
                                     event.eventName,
                                     $this.data('objectid'),
-                                    $this.data('indexname') ? $this.data('indexname') : self.defaultIndexName
+                                    $this.data('indexname') ? $this.data('indexname') : self.defaultIndexName,
+                                    $this.data('position')
                                 );
 
                                 self.trackClick(eventData);
