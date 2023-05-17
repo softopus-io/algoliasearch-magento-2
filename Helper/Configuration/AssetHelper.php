@@ -83,7 +83,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 'icon' => 'iconDocs',
             ],
             [
-                'title' => 'Add an external data source',
+                'title' => 'Autocomplete menu events',
                 'url' => 'https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/?client=php#autocomplete-menu-events',
                 'icon' => 'iconDocs',
             ],
