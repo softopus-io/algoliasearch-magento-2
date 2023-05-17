@@ -835,6 +835,24 @@ class ProductHelper
     }
 
     /**
+     * Take an array of paths where each element is an array of parent-child hierarchies and
+     * append to the top level array each possible parent iteration.
+     * This serves to emulate anchoring in Magento in order to use category page id filtering
+     * without explicit category assignment.
+     *
+     * @param array $paths
+     * @return array
+     */
+    protected function autoAnchorParentCategories(array $paths): array {
+        foreach ($paths as $path) {
+            for ($i = count($path) - 1; $i > 0; $i--) {
+                $paths[] = array_slice($path,0, $i);
+            }
+        }
+        return $this->dedupePaths($paths);
+    }
+
+    /**
      * @param array $algoliaData Data for product object to be serialized to Algolia index
      * @param Product $product
      * @return mixed
@@ -852,7 +870,8 @@ class ProductHelper
         $algoliaData['categoryIds'] = array_values(array_unique($categoryData['categoryIds']));
 
         if ($this->configHelper->isVisualMerchEnabled($storeId)) {
-            $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($categoryData['categoriesWithPath'], $storeId);
+            $autoAnchorPaths = $this->autoAnchorParentCategories($categoryData['categoriesWithPath']);
+            $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($autoAnchorPaths, $storeId);
         }
 
         return $algoliaData;
