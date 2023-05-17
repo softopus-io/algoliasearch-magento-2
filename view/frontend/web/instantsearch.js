@@ -102,6 +102,10 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 				searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
 			}
 		}
+        
+        if (algoliaConfig.instant.isVisualMerchEnabled && algoliaConfig.isCategoryPage ) {
+            searchParameters.filters = `${algoliaConfig.instant.categoryPageIdAttribute}:'${algoliaConfig.request.path}'`;
+        }
 
 		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions, algoliaBundle);
 
